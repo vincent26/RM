@@ -15,10 +15,10 @@ module Monnaie
   MONNAIE_MENU = [1,2,3,4]
   
   #Utilisation du menu shop de YANFLY (Yanfly Engine Ace - Ace Shop Options v1.01)
-  YANFLY_MENU = true
+  YANFLY_MENU = false
   
   #Utilisation du script de craft de  V.M of D.T (Advanced Recipe Crafting v1.0b)
-  CRAFT_MENU = true
+  CRAFT_MENU = false
   #Si vous utiliser ce script :
   #Lors de la configuration de vos recette pour le prix vous pouvez configurez ainsi :
   #:gold_cost => [10,"Or"], #par exemple
@@ -510,7 +510,7 @@ class Scene_Shop < Scene_MenuBase
       array = $1.split(",")
       result = {}
       for i in 0..(array.length-1)/2
-        result[array[i*2+1]] = array[i*2].to_i/2
+        result[array[i*2+1]] = (array[i*2].to_i/2)
       end
       return result
     else

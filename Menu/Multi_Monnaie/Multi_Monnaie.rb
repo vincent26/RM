@@ -1,17 +1,3 @@
-=begin
-###########################################################
-Multi Monnaie
-####
-Vincent26
-####
-Description :
-Ce script permet de creer plusieur monnaie en jeu. Il ajoute de plus la 
-possibiliter de convertir les monnaie entre elles.
-####
-Utilisation :
-Le module ci-dessous permet de configurer le script, a la fin vous 
-trouverez une explication de ce que vous pouvais faire.
-=end
 module Monnaie
   
   #Nombre de monnaie :
@@ -63,6 +49,9 @@ module Monnaie
   Nouvelle fonction :
   Dans un text au lieu de mettre \G on peut désormais mettre \G[id] pour 
   remplacer par le nom de la id'eme monnaie
+  Pour ouvrir la fenêtre de avec la quantiter d'argent mettre au lieu de \$
+  on peut désormais mettre \$[id] pour la id'éme monnaie ou encore \$[id1,id2]
+  pour afficher 2 monnaie etc...
   
   En appel de script pour changer recuperer la valeur d'une monnaie :
   
@@ -104,6 +93,32 @@ module Monnaie
   #Pour lancer le menu de conversion de monnaie :
    SceneManager.call(Scene_Conversion)
 =end
+end
+##############################
+# Modification Window_Message#
+##############################
+class Window_Message
+  alias process_escape_character_multi_monnaie process_escape_character
+  def process_escape_character(code, text, pos)
+    case code.upcase
+    when '$'
+      if text[0] == "["
+        i = 0
+        while text[i] != "]"
+          i+= 1
+        end
+        ok = text.slice!(0..i)
+        ok = ok[1..-2]
+        ok = ok.split(",")
+        ok.each_index {|id| ok[id] = ok[id].to_i}
+        @gold_window.height = (ok.length+1)*24
+        @gold_window.value_affichage = ok
+        @gold_window.create_contents
+        @gold_window.refresh
+      end
+    end
+    process_escape_character_multi_monnaie(code, text, pos)
+  end
 end
 #############################
 # Modification BattleManager#
@@ -495,7 +510,7 @@ class Scene_Shop < Scene_MenuBase
       array = $1.split(",")
       result = {}
       for i in 0..(array.length-1)/2
-        result[array[i*2+1]] = array[i*2].to_i
+        result[array[i*2+1]] = array[i*2].to_i/2
       end
       return result
     else
@@ -521,7 +536,7 @@ end
 class Window_ShopNumber < Window_Selectable
   alias draw_total_price_multi_monnaie draw_total_price
   def draw_total_price ############
-    if @price.is_a?(Integer)
+    if @price.is_a?(Integer) 
       draw_total_price_multi_monnaie
     else
       width = contents_width - 8
@@ -668,8 +683,12 @@ class Window_Gold < Window_Base
   end
   def refresh
     contents.clear
-    for i in 0..@value_affichage.length-1
-      draw_currency_value(value(@value_affichage[i]-1), currency_unit(@value_affichage[i]-1), 4, i*line_height, contents.width - 8)
+    if @value_affichage != []
+      for i in 0..@value_affichage.length-1
+        draw_currency_value(value(@value_affichage[i]-1), currency_unit(@value_affichage[i]-1), 4, i*line_height, contents.width - 8)
+      end
+    else
+      draw_currency_value(value, currency_unit, 4, 0, contents.width - 8)
     end
   end
   def value(id = nil)

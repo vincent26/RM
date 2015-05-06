@@ -1,3 +1,19 @@
+=begin
+#######################################################
+        Multy_Currency
+#########
+Vincent26
+V. 1.2 (06/06/2015)
+####
+Description :
+Permet de creer plusieur type de monnaie dans RM. Cahque monnaie est alors indépendante
+Ajoute de plus un menu avec possibiliter de faire des conversion de monnaie.
+####
+Utilisation :
+Configurer le module suivant :
+A la fin vous trouverez toute les info pour utiliser ce script
+####
+=end
 module Monnaie
   
   #Nombre de monnaie :
@@ -13,17 +29,6 @@ module Monnaie
   
   #Monnaie a afficher dans le menu
   MONNAIE_MENU = [1,2,3,4]
-  
-  #Utilisation du menu shop de YANFLY (Yanfly Engine Ace - Ace Shop Options v1.01)
-  YANFLY_MENU = false
-  
-  #Utilisation du script de craft de  V.M of D.T (Advanced Recipe Crafting v1.0b)
-  CRAFT_MENU = false
-  #Si vous utiliser ce script :
-  #Lors de la configuration de vos recette pour le prix vous pouvez configurez ainsi :
-  #:gold_cost => [10,"Or"], #par exemple
-  #ou encore :
-  #:gold_cost => [10,"Or",200,"Argent"],
   
   #Type de conversion possible entre monnaie
   CONVERSION = [["Or","Âme"],
@@ -45,6 +50,24 @@ module Monnaie
                      [10,1],  # <= 10 cuivre pour 1 argent
                      [1,100]  # <= 1 Âme pour 100 or
                      ]
+  
+  ##################
+  # CONFIGURATION POUR CONFLIT SCRIPT
+                     
+  #Utilisation du menu shop de YANFLY (Yanfly Engine Ace - Ace Shop Options v1.01)
+  YANFLY_MENU = false
+  
+  #Utilisation du script de craft de  V.M of D.T (Advanced Recipe Crafting v1.0b)
+  CRAFT_MENU = false
+  #Si vous utiliser ce script :
+  #Lors de la configuration de vos recette pour le prix vous pouvez configurez ainsi :
+  #:gold_cost => [10,"Or"], #par exemple
+  #ou encore :
+  #:gold_cost => [10,"Or",200,"Argent"],
+  
+  #Utilisation du script de Selchar et Tsukihime (Instance Equip Leveling Base 0 Ver. 1.05)
+  SELCHAR_WEAPON_UPGRADE = false
+                     
 =begin
   Nouvelle fonction :
   Dans un text au lieu de mettre \G on peut désormais mettre \G[id] pour 
@@ -884,6 +907,48 @@ if Monnaie::CRAFT_MENU
         draw_text(x, y, width - cx - 2, contents.font.size, value, 2)
         change_color(system_color)
         draw_text(x, y, width, contents.font.size, unit, 2)
+      end
+    end
+  end
+end
+if Monnaie::SELCHAR_WEAPON_UPGRADE
+  class Scene_Shop < Scene_MenuBase
+    def selling_price
+      if @item.note =~ /<Money = (\S+)>/
+        array = $1.split(",")
+        result = {}
+        for i in 0..(array.length-1)/2
+          result[array[i*2+1]] = (@item.apply_level_price(array[i*2].to_i)/2)
+        end
+        return result
+      else
+        return @item.price / 2
+      end
+    end
+  end
+  class Window_ShopBuy < Window_Selectable
+    def make_item_list
+      @data = []
+      @price = {}
+      @shop_goods.each do |goods|
+        case goods[0]
+        when 0;  item = $data_items[goods[1]]
+        when 1;  item = $data_weapons[goods[1]]
+        when 2;  item = $data_armors[goods[1]]
+        end
+        if item
+          @data.push(item)
+          if item.note =~ /<Money = (\S+)>/
+            array = $1.split(",")
+            result = {}
+            for i in 0..(array.length-1)/2
+              result[array[i*2+1]] = @item.apply_level_price(array[i*2].to_i)
+            end
+            @price[item] = result
+          else
+            @price[item] = goods[2] == 0 ? item.price : goods[3]
+          end
+        end
       end
     end
   end

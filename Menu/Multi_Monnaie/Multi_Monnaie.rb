@@ -1,19 +1,3 @@
-=begin
-#######################################################
-        Multy_Currency
-#########
-Vincent26
-V. 1.2 (06/06/2015)
-####
-Description :
-Permet de creer plusieur type de monnaie dans RM. Cahque monnaie est alors indépendante
-Ajoute de plus un menu avec possibiliter de faire des conversion de monnaie.
-####
-Utilisation :
-Configurer le module suivant :
-A la fin vous trouverez toute les info pour utiliser ce script
-####
-=end
 module Monnaie
   
   #Nombre de monnaie :
@@ -918,7 +902,11 @@ if Monnaie::SELCHAR_WEAPON_UPGRADE
         array = $1.split(",")
         result = {}
         for i in 0..(array.length-1)/2
-          result[array[i*2+1]] = (@item.apply_level_price(array[i*2].to_i)/2)
+          begin
+            result[array[i*2+1]] = (@item.apply_level_price(array[i*2].to_i)/2)
+          else
+            result[array[i*2+1]] = array[i*2].to_i)/2
+          end
         end
         return result
       else
@@ -942,7 +930,11 @@ if Monnaie::SELCHAR_WEAPON_UPGRADE
             array = $1.split(",")
             result = {}
             for i in 0..(array.length-1)/2
-              result[array[i*2+1]] = @item.apply_level_price(array[i*2].to_i)
+              begin
+                result[array[i*2+1]] = @item.apply_level_price(array[i*2].to_i)
+              rescue
+                result[array[i*2+1]] = array[i*2].to_i
+              end
             end
             @price[item] = result
           else

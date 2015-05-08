@@ -160,10 +160,11 @@ end
 class Game_Troop
   def gold_total(test = false)
     result = {}
-    r = 0
+    a = 0
     for ene in 0..dead_members.length-1
-      r += dead_members[ene].gold * gold_rate
+      a += dead_members[ene].gold
       if $data_enemies[dead_members[ene].enemy_id].note =~ /<Money = (\S+)>/
+        puts $1.to_s
         array = $1.split(",")
         for i in 0..(array.length-1)/2
           if result.has_key?(array[i*2+1])
@@ -174,8 +175,9 @@ class Game_Troop
         end
       end
     end
-    $game_party.gain_gold(r) if r != 0
-    return sprintf(Vocab::ObtainGold, $game_troop.gold_total) if result.empty? && r != 0
+    a *= gold_rate
+    $game_party.gain_gold(a) if a != 0
+    return sprintf(Vocab::ObtainGold, a) if result.empty? && a != 0
     texte = ""
     i = 0
     result.each do |key,value|
@@ -546,6 +548,7 @@ end
 ######################################
 class Window_ShopSell < Window_ItemList
   def enable?(item)
+    return false if item == nil
     if item.note =~ /<Money = (\S+)>/
       return true
     else
@@ -886,7 +889,7 @@ if Monnaie::CRAFT_MENU
         value2 = value.clone.reverse!
         for i in value2
           if i.is_a?(Integer)
-            w = text_size(i.to_s).width
+            w = text_size(i.to_s).width*1.2
             draw_text(x+width-w-x2, y, w, contents.font.size, i.to_s, 2)
             x2 += w
           else
@@ -895,7 +898,7 @@ if Monnaie::CRAFT_MENU
               draw_icon(Monnaie::ICON[id], x+width-24-x2, y-(24-contents.font.size)/2)
               x2 += 24
             else
-              w = text_size(i).width
+              w = text_size(i).width*1.2
               draw_text(x+width-w-x2, y, w, contents.font.size, i, 2)
               x2 += w
             end
@@ -919,8 +922,9 @@ if Monnaie::SELCHAR_WEAPON_UPGRADE
         result = {}
         for i in 0..(array.length-1)/2
           begin
-            result[array[i*2+1]] = (@item.apply_level_price(array[i*2].to_i)/2)
-          else
+            @item.level
+            result[array[i*2+1]] = (@item.make_price(array[i*2].to_i)/2)
+          rescue
             result[array[i*2+1]] = (array[i*2].to_i)/2
           end
         end
@@ -947,7 +951,8 @@ if Monnaie::SELCHAR_WEAPON_UPGRADE
             result = {}
             for i in 0..(array.length-1)/2
               begin
-                result[array[i*2+1]] = @item.apply_level_price(array[i*2].to_i)
+                item.level
+                result[array[i*2+1]] = item.make_price(array[i*2].to_i)
               rescue
                 result[array[i*2+1]] = array[i*2].to_i
               end

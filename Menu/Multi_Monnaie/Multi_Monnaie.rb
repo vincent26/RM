@@ -1,3 +1,19 @@
+=begin
+#######################################################
+        Multy_Currency
+#########
+Vincent26
+V. 1.2 (08/06/2015)
+####
+Description :
+Permet de creer plusieur type de monnaie dans RM. Cahque monnaie est alors indépendante
+Ajoute de plus un menu avec possibiliter de faire des conversion de monnaie.
+####
+Utilisation :
+Configurer le module suivant :
+A la fin vous trouverez toute les info pour utiliser ce script
+####
+=end
 module Monnaie
   
   #Nombre de monnaie :

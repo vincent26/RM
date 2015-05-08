@@ -921,7 +921,7 @@ if Monnaie::SELCHAR_WEAPON_UPGRADE
           begin
             result[array[i*2+1]] = (@item.apply_level_price(array[i*2].to_i)/2)
           else
-            result[array[i*2+1]] = array[i*2].to_i)/2
+            result[array[i*2+1]] = (array[i*2].to_i)/2
           end
         end
         return result

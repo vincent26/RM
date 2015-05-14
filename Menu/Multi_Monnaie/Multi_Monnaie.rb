@@ -894,10 +894,10 @@ if Monnaie::CRAFT_MENU
         if $crafting_monnaie.is_a?(Array)
           array = []
           for i in $crafting_monnaie
-            array.push(Monnaie::NAME.index(i))
+            array.push(Monnaie::NAME.index(i)+1)
           end
         elsif $crafting_monnaie.is_a?(String)
-          array = [Monnaie::NAME.index($crafting_monnaie)]
+          array = [Monnaie::NAME.index($crafting_monnaie)+1]
         end
         @gold_window = Window_Gold2.new
         @gold_window.width = Graphics.width / 2

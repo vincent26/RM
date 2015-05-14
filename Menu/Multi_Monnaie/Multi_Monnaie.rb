@@ -3,7 +3,7 @@
         Multy_Currency
 #########
 Vincent26
-V. 1.2 (08/06/2015)
+V. 1.4 (14/05/2015)
 ####
 Description :
 Permet de creer plusieur type de monnaie dans RM. Cahque monnaie est alors indépendante
@@ -64,6 +64,12 @@ module Monnaie
   #:gold_cost => [10,"Or"], #par exemple
   #ou encore :
   #:gold_cost => [10,"Or",200,"Argent"],
+  #Lors du lancement d'un menu crafting si vous voulez pas utiliser toute les monnaie,
+  #ajouter cela comme appel de script avant de lancer le magasin :
+  #$crafting_monnaie = "Or" #pour n'utiliser que l'or
+  #$crafting_monnaie = ["Or","Argent",...] #pour utiliser que les monnaie donnée
+  #$crafting_monnaie = :all #pour utiliser toute les monnaie
+  #ne pas définir $crafting_monnaie utiliser toute les monnaie
   
   #Utilisation du script de Selchar et Tsukihime (Instance Equip Leveling Base 0 Ver. 1.05)
   SELCHAR_WEAPON_UPGRADE = false
@@ -164,7 +170,6 @@ class Game_Troop
     for ene in 0..dead_members.length-1
       a += dead_members[ene].gold
       if $data_enemies[dead_members[ene].enemy_id].note =~ /<Money = (\S+)>/
-        puts $1.to_s
         array = $1.split(",")
         for i in 0..(array.length-1)/2
           if result.has_key?(array[i*2+1])
@@ -739,6 +744,66 @@ class Window_Gold < Window_Base
     return Monnaie::ICON[id] != nil ? Monnaie::ICON[id] : Monnaie::NAME[id]
   end
 end
+##################################
+# Modification de la window gold #
+##################################
+class Window_Gold2 < Window_Gold
+  def refresh
+    contents.clear
+    if @value_affichage != []
+      @coef2 = (contents.width/calcul_size).to_f
+      @coef = [@coef2,1.0].min
+      @pos_x = 0
+      for i in @value_affichage
+        largeur = text_size(value(i-1).to_s+" ").width
+        if currency_unit(i-1).is_a?(Integer)
+          largeur += 24
+        else
+          largeur += text_size(currency_unit(i-1)+"   ").width
+        end
+        @pos_x += largeur*@coef
+        draw_currency_value(value(i-1), currency_unit(i-1), contents.width-@pos_x, 0, largeur*@coef)
+      end
+    else
+      draw_currency_value(value, currency_unit, 4, 0, contents.width - 8)
+    end
+  end
+  def calcul_size
+    w = 0
+    texte = ""
+    for i in 0..@value_affichage.length-1
+      texte += value(@value_affichage[i]-1).to_s+" "
+      if currency_unit(@value_affichage[i]-1).is_a?(Integer)
+        w+= 26 
+      else
+        texte += currency_unit(@value_affichage[i]-1)+" "
+      end
+    end
+    w += text_size(texte).width
+    return w
+  end
+  def value(id = nil)
+    return $game_party.gold if id == nil
+    return $game_party.gold2[id]
+  end
+  def draw_currency_value(value, unit, x, y, width)
+    if unit.is_a?(Integer)
+      change_color(normal_color)
+      draw_text(x, y, width - 24 - 2, line_height, value, 2)
+      draw_icon(unit, x+width-24, y)
+    else
+      cx = text_size(unit).width
+      change_color(normal_color)
+      draw_text(x, y, width - cx - 2, line_height, value, 2)
+      change_color(system_color)
+      draw_text(x, y, width, line_height, unit, 2)
+    end
+  end
+  def currency_unit(id = nil)
+    return Vocab::currency_unit if id == nil
+    return Monnaie::ICON[id] != nil ? Monnaie::ICON[id] : Monnaie::NAME[id]
+  end
+end
 ################################
 # Ajout des monnaie a l'équipe #
 ################################
@@ -819,6 +884,35 @@ end
 # Modif pour le menu craft #
 ############################
 if Monnaie::CRAFT_MENU
+  $crafting_monnaie = :all
+  class Scene_CraftingAll < Scene_Base
+    alias start_multi_monnaie start
+    def start
+      start_multi_monnaie
+      if !ADV_RECIPE::DISABLE_GOLD_COST
+        array = Monnaie::MONNAIE_MENU if $crafting_monnaie == :all
+        if $crafting_monnaie.is_a?(Array)
+          array = []
+          for i in $crafting_monnaie
+            array.push(Monnaie::NAME.index(i))
+          end
+        elsif $crafting_monnaie.is_a?(String)
+          array = [Monnaie::NAME.index($crafting_monnaie)]
+        end
+        @gold_window = Window_Gold2.new
+        @gold_window.width = Graphics.width / 2
+        @gold_window.y = Graphics.height - @gold_window.height
+        @gold_window.x = Graphics.width / 2
+        @gold_window.value_affichage = array
+        @gold_window.create_contents
+        @gold_window.refresh
+      end
+    end
+    def terminate
+      super
+      $crafting_monnaie = :all
+    end
+  end
   #Modification de la class recette
   class Recipe
     #Modification du test de possetion argent
@@ -827,7 +921,25 @@ if Monnaie::CRAFT_MENU
         result = 0
         for i in 0..@gold_cost.length/2-1
           id = Monnaie::NAME.index(@gold_cost[i*2+1])
-          result +=2 if $game_party.gold2[id] >= @gold_cost[i*2]
+          if $crafting_monnaie.is_a?(Array)
+            if $game_party.gold2[id] >= @gold_cost[i*2] && $crafting_monnaie.include?(@gold_cost[i*2+1])
+              result +=2
+            else
+              return false
+            end
+          elsif $crafting_monnaie.is_a?(String)
+            if $game_party.gold2[id] >= @gold_cost[i*2] && $crafting_monnaie == @gold_cost[i*2+1]
+              result +=2
+            else
+              return false
+            end
+          else
+            if $game_party.gold2[id] >= @gold_cost[i*2]
+              result +=2
+            else
+              return false
+            end
+          end
         end
         return true if result == @gold_cost.length
       else
@@ -890,6 +1002,7 @@ if Monnaie::CRAFT_MENU
         for i in value2
           if i.is_a?(Integer)
             w = text_size(i.to_s).width*1.2
+            w *= 1.2 if i.to_s.length == 1
             draw_text(x+width-w-x2, y, w, contents.font.size, i.to_s, 2)
             x2 += w
           else
@@ -914,6 +1027,9 @@ if Monnaie::CRAFT_MENU
     end
   end
 end
+################################
+# Modif pour l'update des arme #
+################################
 if Monnaie::SELCHAR_WEAPON_UPGRADE
   class Scene_Shop < Scene_MenuBase
     def selling_price

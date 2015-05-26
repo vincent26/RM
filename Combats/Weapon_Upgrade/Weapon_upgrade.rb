@@ -16,35 +16,99 @@ Utilisation :
 Configurer le module suivant pour mettre en place ce script
 =end
 module Weapon_Upgrade
+  
   #Ne pas modifier
   CARACTERISTIQUE = {:max_hp => 0,:max_mp => 1,:force => 2,:defense => 3,
-                     :magic_att => 4,:magic_def => 5,:agiliter => 6,:chance => 7}
+                    :magic_atk => 4,:magic_def => 5,:agilité => 6,:chance => 7}
   
-  #LISTE DES TYPE D'ARME DANS LE LEXIQUE DE LA BDD
+  #LISTE DES TYPES D'ARMES DANS LE LEXIQUE DE LA BDD
   #
   #
-  # Liste des upgrade des type d'arme (ne pas enlever ni oublier le true):
+  # Liste des upgrades des types d'armes :
   # TYPE => [[NBR_COUP,VALEUR,CARACTERISTIQUE,[ID_PERSONNAGE]],...]
   #
-  # TYPE est le type d'arme (l'id associer dans la BDD)
-  # VALEUR est la valeur a ajouter a la caracteristique du perso
-  # CARACTERISTIQUE est la cracteristique a modifier
-  # ID_PERSONNAGE est la liste des personnage a qui peut s'appliquer cette upgrade
+  # TYPE est le type d'arme (l'id associé dans la BDD)
+  # VALEUR est la valeur à ajouter à la caractéristique du perso
+  # CARACTERISTIQUE est la caractéristique à modifier
+  # ID_PERSONNAGE est la liste des personnages à qui peut s'appliquer cet upgrade
   UPGRADE_LIST = {
-    1 => [[2,10,:force,[1,2]],[5,10,:defense,[1]]],
-    2 => [[2,10,:max_hp,[2]]]
+    1 => [[20,3,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,100,:force,[1,2,3,4,5,6,7,8,9,10]]],
+    2 => [[20,3,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,100,:force,[1,2,3,4,5,6,7,8,9,10]]],
+    3 => [[20,3,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,100,:force,[1,2,3,4,5,6,7,8,9,10]]],
+    4 => [[20,3,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,100,:force,[1,2,3,4,5,6,7,8,9,10]]],
+    5 => [[20,3,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:force,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,100,:force,[1,2,3,4,5,6,7,8,9,10]]],
+    6 => [[20,3,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,100,:agilité,[1,2,3,4,5,6,7,8,9,10]]],
+    7 => [[20,3,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,100,:agilité,[1,2,3,4,5,6,7,8,9,10]]],
+    8 => [[20,3,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,150,:magic_atk,[1,2,3,4,5,6,7,8,9,10]]],
+    9 => [[20,3,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,150,:magic_atk,[1,2,3,4,5,6,7,8,9,10]]],
+   10 => [[20,3,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [50,5,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [100,10,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [500,20,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [1000,50,:agilité,[1,2,3,4,5,6,7,8,9,10]],
+         [9999,100,:agilité,[1,2,3,4,5,6,7,8,9,10]]]
     }
   
+  #Nombre de type d'arme
   NBR_TYPE_ARME = 10
   
+  #Liste des types d'armes
   LIST_TYPE_ARME = ["Hache","Griffes","Lance","Épée","Katana","Arc","Dague",
-                    "Marteau","Bâton","Arme à feu"]
+                    "Massue","Bâton","Arme à feu"]
   
-  LVL_DESCRIPTION = {0=>"Débutant",2=>"Initier",5=>"Novice",20=>"Apprentit",
-                     40=>"Normal",80=>"Intermédiaire",160=>"Chercheur",
-                     320=>"Habituer",640=>"Experimenter",1280=>"Maître",
-                     2560=>"Grand Maître",6120=>"Génie",12240=>"Dieu"}
+  #Description des levels de maitrisse
+  LVL_DESCRIPTION = {0=>"Néophyte",20=>"Initié",50=>"Apprenti",100=>"Confirmé",
+                    500=>"Expert",1000=>"Maître", 9999=>"Légende"}
   
+  #Pour définir une autre attaque que celle de base pour le décompte des point 
+  #ajouter cela dans la note d'un personnage :
+  #<Basic_Skill = ID>
+  #ID est l'id de la compétence prise pour base
   
 end
 class Scene_Battle
@@ -55,16 +119,19 @@ class Scene_Battle
     start_weapon_upgrade
   end
   
-  alias show_animation_weapon_upgrade show_animation
-  def show_animation(targets, animation_id)
+  alias use_item_weapon_upgrade use_item
+  def use_item
     @attaque_standard = false
-    show_animation_weapon_upgrade(targets, animation_id)
-  end
-  
-  alias show_attack_animation_weapon_upgrade show_attack_animation
-  def show_attack_animation(targets)
-    show_attack_animation_weapon_upgrade(targets)
-    @attaque_standard = true
+    item = @subject.current_action.item
+    if @subject.actor?
+      if @subject.actor.note =~ /<Basic_Skill = (\d+)>/
+        skill_id = $1.to_i
+        @attaque_standard = true if item.id == skill_id
+      else
+        @attaque_standard = true if item.animation_id < 0
+      end
+    end
+    use_item_weapon_upgrade
   end
   
   alias apply_item_effects_weapon_uprade apply_item_effects
@@ -145,7 +212,6 @@ class Game_Actor
   end
   
   def weapon_upgrade
-    puts @weapon_upgrade
     return @weapon_upgrade
   end
   
@@ -158,8 +224,8 @@ class Game_Actor
           if @weapon_upgrade[id.to_s] >= liste[0]
             param = Weapon_Upgrade::CARACTERISTIQUE[liste[2]]
             add_param(param, liste[1])
-                                  #NOMPERSO          |              NOUVEAU RANG                   |        |         NOM ARME               |               | VALEUR AUG |   | NOM DU PARAMETRE|
-            @texte_fin_combat.push(@name +" devient "+Weapon_Upgrade::LVL_DESCRIPTION[liste[0]].to_s+" en "+Weapon_Upgrade::LIST_TYPE_ARME[id]+ ", gain : +"+liste[1].to_s+" "+Vocab.param(param))
+                     #NOMPERSO          |              NOUVEAU RANG                  |        |        NOM ARME              |                      | NOM DU PARAMETRE|     | VALEUR AUG |
+            @texte_fin_combat.push(@name +" devient "+Weapon_Upgrade::LVL_DESCRIPTION[liste[0]].to_s+" en "+Weapon_Upgrade::LIST_TYPE_ARME[id-1]+ ", "+Vocab.param(param)+" +"+liste[1].to_s+".")
             @upgrade_list[key][j][3] = false
           end
         end
@@ -167,7 +233,7 @@ class Game_Actor
     end
   end
 end
-class Scene_Status < Scene_MenuBase
+class Scene_Status
   
   
   alias update_weapon_upgrade update
@@ -176,36 +242,37 @@ class Scene_Status < Scene_MenuBase
     if Input.trigger?(:A)
       Sound.play_cursor
       switch_info
-    elsif Input.trigger?(:UP) && @status_window.menu == 1
+    elsif Input.trigger?(:UP) && @item_window.menu == 1
       Sound.play_cursor
-      @status_window.ligne_actuel -= 1
-      @status_window.refresh
-    elsif Input.trigger?(:DOWN) && @status_window.menu == 1
+      @item_window.ligne_actuel -= 1
+      @item_window.refresh
+    elsif Input.trigger?(:DOWN) && @item_window.menu == 1
       Sound.play_cursor
-      @status_window.ligne_actuel += 1
-      @status_window.refresh
+      @item_window.ligne_actuel += 1
+      @item_window.refresh
     end
   end
   
   def switch_info
-    if @status_window.menu == 1
-      @status_window.menu = 0
+    if @item_window.menu == 1
+      @item_window.menu = 0
+      @command_window.activate
     else
-      @status_window.menu = 1
+      @item_window.menu = 1
+      @command_window.deactivate
     end
-    @status_window.refresh
+    @item_window.refresh
   end
 end
-
-class Window_Status
+class Window_StatusItem < Window_Base
   
   attr_accessor :menu
   attr_reader :ligne_actuel
   
   alias initialize_weapon_upgrade initialize
-  def initialize(actor)
+  def initialize(*args)
     @ligne_actuel = 0
-    initialize_weapon_upgrade(actor)
+    initialize_weapon_upgrade(*args)
     @menu = 0
   end
   
@@ -220,24 +287,28 @@ class Window_Status
     @ligne_actuel = [[value,table.length-5].min,0].max
   end
   
-  alias draw_block3_weapon_upgrade draw_block3
-  def draw_block3(y)
-    if @menu == 1
-      table = []
-      for feat in @actor.class.features
-        if feat.code == 51
-          table.push(feat.data_id)
-        end
-      end
-      table.uniq!
-      draw_arme_usable(32,y,table)
-      draw_arme_lvl(270,y,table)
-      draw_arme_param(380,y,table)
-      draw_arme_rang(150,y,table)
-    else
-      draw_block3_weapon_upgrade(y)
-    end
+  def refresh
+    contents.clear
+    reset_font_settings
+    return unless @actor
+    draw_window_contents if @menu == 0
+    draw_block_vincent26(0) if @menu == 1
   end
+  
+  def draw_block_vincent26(y)
+    table = []
+    for feat in @actor.class.features
+      if feat.code == 51
+        table.push(feat.data_id)
+      end
+    end
+    table.uniq!
+    draw_arme_usable(32,y,table)
+    draw_arme_lvl(270,y,table)
+    draw_arme_param(380,y,table)
+    draw_arme_rang(150,y,table)
+  end
+  
   
   def draw_arme_rang(x,y,table)
     for i in 0..table.length
@@ -266,7 +337,7 @@ class Window_Status
             if j[3] == true
               value = j[1]
               param = Weapon_Upgrade::CARACTERISTIQUE[j[2]]
-              texte = "+ "+value.to_s+" "+Vocab::param(param)
+              texte = Vocab::param(param)+" +"+value.to_s
               break
             end
             texte = "-----"
@@ -311,7 +382,7 @@ class Window_Status
           texte = "-/-"
         end
       else
-        texte = "Lvl"
+        texte = "Points"
       end
       draw_text_ex(x, y+i*line_height, texte)
     end

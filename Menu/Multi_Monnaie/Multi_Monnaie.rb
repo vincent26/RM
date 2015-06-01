@@ -751,10 +751,6 @@ elsif Monnaie::TYPE_MENU_MAGASIN == 2
     def create_gold_window
       create_gold_window_monnaie
       array = Monnaie::MONNAIE_MENU
-      if Monnaie::YANFLY_MENU
-        @gold_window.height = 24+24*array.length
-        @gold_window.y = 0
-      end
       @gold_window.value_affichage = [array[0]]
       @gold_window.create_contents
       @gold_window.refresh

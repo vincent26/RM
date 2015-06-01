@@ -1439,7 +1439,6 @@ if Monnaie::GALV_BANK_SYSTEM
         for i in value2
           if i.is_a?(Integer)
             w = text_size(i.to_s).width*1.2
-            w *= 1.2 if i.to_s.length == 1
             draw_text(x+width-w-x2, y, w, contents.font.size, i.to_s, 2)
             x2 += w
           else

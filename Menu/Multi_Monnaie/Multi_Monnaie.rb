@@ -3,7 +3,7 @@
         Multi_Currency
 #########
 Vincent26
-V. 1.4 (14/05/2015)
+V. 1.5 (01/06/2015)
 ####
 Description :
 Permet de creer plusieur type de monnaie dans RM. Cahque monnaie est alors indépendante
@@ -73,7 +73,62 @@ module Monnaie
   
   #Utilisation du script de Selchar et Tsukihime (Instance Equip Leveling Base 0 Ver. 1.05)
   SELCHAR_WEAPON_UPGRADE = false
-                     
+  
+  #Utilisation du script de bank de Galv (Galv's Item/Bank Storage)
+  GALV_BANK_SYSTEM = true
+  #La modficication permet de stocker toute les monnaie
+  #NOUVELLE FONCTION :
+  #Dans le menu bank l'appuye de la touche CTRL change la monnaie a déposer
+  #bank_add(amount,name)
+  #bank_rem(amount,name)
+  #bank_count(name)
+  
+  ##############################################################################
+  
+  #Type du magasin (1 ou 2)
+  TYPE_MENU_MAGASIN = 2
+=begin
+  2 Type de magain sont a votre disposition. 
+  
+  MAGASIN 1 :  
+  Le magasin 1 est le magasin classique,chaque item peut voit son prix définit
+  en fonction de toute les monnaie a la fois:
+  ex 1 potion coute 10 d'Or et 20 de Cuivre
+  
+  Il faut un appel de script avant de lancer le magasin pour choisir les monnaie
+  disponible dans celui-ci :
+  Faire un appel de script : magasin(name)
+  name est le nom de la monnaie utilisable ou un tableau des monnaie utilisable
+  Faire ensuite un appel de magasin basique
+  ATTENTION : les objet du magasin doivent avoir été définit comme ci-après
+  Sinon une erreur va ce produire
+  ex : magasin("Or")
+  ou : magasin(["Or","Argent"])
+  
+  Pour définir les prix des objets il faut faire ainsi :
+  Dans la note de l'item mettre :
+  <Money = Prix,MON,PRIX,MON,...>
+  ex : <Money = 50,Or,20,Argent> pour 50 d'or et 20 d'argent
+  
+  Le menu magasin de Yanfly est compatible avec ce magasin
+  
+  MAGASIN 2 :
+  Le magasin 2 est le magasin améliorer pour ne pas déformer l'affichage en cas 
+  d'utilisation de beaucoup de monnaie et plus simple d'utilisation. Chaque 
+  objet objet voit son prix définit en fonction d'une seule monnaie a la fois:
+  ex 1 potion coute 10 d'Or OU 20 de Cuivre
+  
+  Il ne faut pas d'appel de script avant de lancer ce magasin
+  
+  Pour définir les prix des objets il faut faire ainsi :
+  Dans la note de l'item mettre :
+  <Money = Prix,MON,PRIX,MON,...>
+  ex : <Money = 50,Or,20,Argent> pour 50 d'or OU 20 d'argent
+  
+  Le menu magasin de Yanfly n'est peut-être pas compatible avec ce magasin
+
+=end
+##############
 =begin
   Nouvelle fonction :
   Dans un text au lieu de mettre \G on peut désormais mettre \G[id] pour 
@@ -100,7 +155,7 @@ module Monnaie
   OU
   name => tableau de nom ex: ["Or","Argent"]
   
-  #Pour lancer un magasin avec une monnaie particulière:
+  #Pour lancer un magasin avec une monnaie particulière (uniquement magasin 1):
    Faire un appel de script : magasin(name)
    name est le nom de la monnaie utilisable ou un tableau des monnaie utilisable
    Faire ensuite un appel de magasin basique
@@ -451,174 +506,14 @@ end
 # Modification de la Scene_Shop#
 ################################
 class Scene_Shop < Scene_MenuBase
-  alias prepare_monnaie prepare
-  def prepare(goods, purchase_only,monnaie)
-    prepare_monnaie(goods, purchase_only)
-    @monnaie = monnaie
-    msgbox("Monnaie non définit pour ce shop") if @monnaie == nil
-  end
-  alias create_gold_window_monnaie create_gold_window
-  def create_gold_window
-    create_gold_window_monnaie
-    array = @monnaie
-    array = [@monnaie] if !@monnaie.is_a?(Array)
-    if array.length > 1
-      if !Monnaie::YANFLY_MENU
-        @gold_window.height = 24+24+@help_window.height
-        @gold_window.y = 0
-        @help_window.width = Graphics.width-@gold_window.width
-        @help_window.create_contents
-      else
-        @gold_window.height = 24+24*array.length
-        @gold_window.y = 0
-      end
-    end
-    @gold_window.value_affichage = array
-    @gold_window.create_contents
-    @gold_window.refresh
-  end
-  def create_buy_window
-    wy = @dummy_window.y
-    wh = @dummy_window.height
-    @buy_window = Window_ShopBuy.new(0, wy, wh, @goods, money)
-    @buy_window.viewport = @viewport
-    @buy_window.help_window = @help_window
-    @buy_window.status_window = @status_window
-    @buy_window.hide
-    @buy_window.set_handler(:ok,     method(:on_buy_ok))
-    @buy_window.set_handler(:cancel, method(:on_buy_cancel))
-    if Monnaie::YANFLY_MENU
-      array = @monnaie
-      array = [@monnaie] if !@monnaie.is_a?(Array)
-      @status_window.height -= 24*(array.length-1)
-      @status_window.y += 24*(array.length-1)
-    end
-  end
-  alias do_buy_multi_monnaie do_buy
-  def do_buy(number)
-    if buying_price.is_a?(Integer)
-      do_buy_multi_monnaie(number)
-    else
-      buying_price.each do |key,value|
-        id = Monnaie::NAME.index(key)
-        $game_party.lose_gold((value*number),id)
-      end
-      $game_party.gain_item(@item, number)
-    end
-  end
-  alias do_sell_multi_monnaie do_sell
-  def do_sell(number)
-    if selling_price.is_a?(Integer)
-      do_sell_multi_monnaie(number)
-    else
-      selling_price.each do |key,value|
-        id = Monnaie::NAME.index(key)
-        $game_party.gain_gold((value*number),id)
-      end
-      $game_party.lose_item(@item, number)
-    end
-  end
-  alias max_buy_multi_monnaie max_buy
-  def max_buy
-    max = $game_party.max_item_number(@item) - $game_party.item_number(@item)
-    if buying_price.is_a?(Integer)
-      return max_buy_multi_monnaie
-    else
-      ok = [max]
-      buying_price.each do |key,value|
-        id = Monnaie::NAME.index(key)
-        ok.push($game_party.gold2[id] / value)
-      end
-      return ok.min
-    end
-  end
   def money
     @gold_window.value_affichage
-  end
-  def selling_price
-    if @item.note =~ /<Money = (\S+)>/
-      array = $1.split(",")
-      result = {}
-      for i in 0..(array.length-1)/2
-        result[array[i*2+1]] = (array[i*2].to_i/2)
-      end
-      return result
-    else
-      return @item.price / 2
-    end
-  end
-end
-######################################
-# Modification de la Window ShopSell #
-######################################
-class Window_ShopSell < Window_ItemList
-  def enable?(item)
-    return false if item == nil
-    if item.note =~ /<Money = (\S+)>/
-      return true
-    else
-      return item && item.price > 0
-    end
-  end
-end
-########################################
-# Modification de la window ShopNumber #
-########################################
-class Window_ShopNumber < Window_Selectable
-  alias draw_total_price_multi_monnaie draw_total_price
-  def draw_total_price ############
-    if @price.is_a?(Integer) 
-      draw_total_price_multi_monnaie
-    else
-      width = contents_width - 8
-      rect = Rect.new(4,price_y,width,line_height)
-      width_tot = 0
-      @price.each do |key,value|
-        width_tot += text_size((value*@number).to_s).width
-        if Monnaie::ICON[Monnaie::NAME.index(key)] != nil
-          width_tot += 24
-        else
-          width_tot += text_size(key).width
-        end
-      end
-      rect.width -= width_tot
-      @price.each do |key,value|
-        id = Monnaie::ICON[Monnaie::NAME.index(key)]
-        rect.width += text_size((value*@number).to_s).width
-        draw_text(rect, (value*@number).to_s, 2)
-        if id != nil
-          rect.width += 24
-          draw_icon(id, rect.x+rect.width-24, rect.y)
-        else
-          rect.width += text_size(key).width
-          draw_text(rect, key, 2)
-        end
-      end
-    end
   end
 end
 #####################################
 # Modification de la window shopBuy #
 #####################################
 class Window_ShopBuy < Window_Selectable
-  def initialize(x, y, height, shop_goods,money = 0)
-    super(x, y, window_width, height)
-    @shop_goods = shop_goods
-    @money = money
-    refresh
-    select(0)
-  end
-  def enable?(item)
-    if item && !$game_party.item_max?(item)
-      price(item).each do |key,value|
-        return false if !@money.include?(Monnaie::NAME.index(key)+1)
-        return false if value > $game_party.gold2[Monnaie::NAME.index(key)]
-      end
-    else
-      return false
-    end
-    return true
-  end
   def make_item_list
     @data = []
     @price = {}
@@ -643,34 +538,420 @@ class Window_ShopBuy < Window_Selectable
       end
     end
   end
-  def draw_item(index)
-    item = @data[index]
-    rect = item_rect(index)
-    draw_item_name(item, rect.x, rect.y, enable?(item))
-    rect.width -= 4
-    if price(item).is_a?(Integer)
-      draw_text(rect, price(item), 2)
-    else
-      width_tot = 0
-      price(item).each do |key,value|
-          width_tot += text_size(value.to_s).width
-        if Monnaie::ICON[Monnaie::NAME.index(key)] != nil
-          width_tot += 24
+end
+if Monnaie::TYPE_MENU_MAGASIN == 1
+  ################################
+  # Modification de la Scene_Shop#
+  ################################
+  class Scene_Shop < Scene_MenuBase
+    alias prepare_monnaie prepare
+    def prepare(goods, purchase_only,monnaie)
+      prepare_monnaie(goods, purchase_only)
+      @monnaie = monnaie
+      msgbox("Monnaie non définit pour ce shop") if @monnaie == nil
+    end
+    alias create_gold_window_monnaie create_gold_window
+    def create_gold_window
+      create_gold_window_monnaie
+      array = @monnaie
+      array = [@monnaie] if !@monnaie.is_a?(Array)
+      if array.length > 1
+        if !Monnaie::YANFLY_MENU
+          @gold_window.height = 24+24+@help_window.height
+          @gold_window.y = 0
+          @help_window.width = Graphics.width-@gold_window.width
+          @help_window.create_contents
         else
-          width_tot += text_size(key).width
+          @gold_window.height = 24+24*array.length
+          @gold_window.y = 0
         end
       end
-      rect.width -= width_tot
-      price(item).each do |key,value|
-        id = Monnaie::ICON[Monnaie::NAME.index(key)]
-        rect.width += text_size(value.to_s).width
-        draw_text(rect, value.to_s, 2)
-        if id != nil
-          rect.width += 24
-          draw_icon(id, rect.x+rect.width-24, rect.y,enable?(item))
-        else
-          rect.width += text_size(key).width
-          draw_text(rect, key, 2)
+      @gold_window.value_affichage = array
+      @gold_window.create_contents
+      @gold_window.refresh
+    end
+    def create_buy_window
+      wy = @dummy_window.y
+      wh = @dummy_window.height
+      @buy_window = Window_ShopBuy.new(0, wy, wh, @goods, money)
+      @buy_window.viewport = @viewport
+      @buy_window.help_window = @help_window
+      @buy_window.status_window = @status_window
+      @buy_window.hide
+      @buy_window.set_handler(:ok,     method(:on_buy_ok))
+      @buy_window.set_handler(:cancel, method(:on_buy_cancel))
+      if Monnaie::YANFLY_MENU
+        array = @monnaie
+        array = [@monnaie] if !@monnaie.is_a?(Array)
+        @status_window.height -= 24*(array.length-1)
+        @status_window.y += 24*(array.length-1)
+      end
+    end
+    alias do_buy_multi_monnaie do_buy
+    def do_buy(number)
+      if buying_price.is_a?(Integer)
+        do_buy_multi_monnaie(number)
+      else
+        buying_price.each do |key,value|
+          id = Monnaie::NAME.index(key)
+          $game_party.lose_gold((value*number),id)
+        end
+        $game_party.gain_item(@item, number)
+      end
+    end
+    alias do_sell_multi_monnaie do_sell
+    def do_sell(number)
+      if selling_price.is_a?(Integer)
+        do_sell_multi_monnaie(number)
+      else
+        selling_price.each do |key,value|
+          id = Monnaie::NAME.index(key)
+          $game_party.gain_gold((value*number),id)
+        end
+        $game_party.lose_item(@item, number)
+      end
+    end
+    alias max_buy_multi_monnaie max_buy
+    def max_buy
+      max = $game_party.max_item_number(@item) - $game_party.item_number(@item)
+      if buying_price.is_a?(Integer)
+        return max_buy_multi_monnaie
+      else
+        ok = [max]
+        buying_price.each do |key,value|
+          id = Monnaie::NAME.index(key)
+          ok.push($game_party.gold2[id] / value)
+        end
+        return ok.min
+      end
+    end
+    def selling_price
+      if @item.note =~ /<Money = (\S+)>/
+        array = $1.split(",")
+        result = {}
+        for i in 0..(array.length-1)/2
+          result[array[i*2+1]] = (array[i*2].to_i/2)
+        end
+        return result
+      else
+        return @item.price / 2
+      end
+    end
+  end
+  ######################################
+  # Modification de la Window ShopSell #
+  ######################################
+  class Window_ShopSell < Window_ItemList
+    def enable?(item)
+      return false if item == nil
+      if item.note =~ /<Money = (\S+)>/
+        return true
+      else
+        return item && item.price > 0
+      end
+    end
+  end
+  ########################################
+  # Modification de la window ShopNumber #
+  ########################################
+  class Window_ShopNumber < Window_Selectable
+    alias draw_total_price_multi_monnaie draw_total_price
+    def draw_total_price ############
+      if @price.is_a?(Integer) 
+        draw_total_price_multi_monnaie
+      else
+        width = contents_width - 8
+        rect = Rect.new(4,price_y,width,line_height)
+        width_tot = 0
+        @price.each do |key,value|
+          width_tot += text_size((value*@number).to_s).width
+          if Monnaie::ICON[Monnaie::NAME.index(key)] != nil
+            width_tot += 24
+          else
+            width_tot += text_size(key).width
+          end
+        end
+        rect.width -= width_tot
+        @price.each do |key,value|
+          id = Monnaie::ICON[Monnaie::NAME.index(key)]
+          rect.width += text_size((value*@number).to_s).width
+          draw_text(rect, (value*@number).to_s, 2)
+          if id != nil
+            rect.width += 24
+            draw_icon(id, rect.x+rect.width-24, rect.y)
+          else
+            rect.width += text_size(key).width
+            draw_text(rect, key, 2)
+          end
+        end
+      end
+    end
+  end
+  #####################################
+  # Modification de la window shopBuy #
+  #####################################
+  class Window_ShopBuy < Window_Selectable
+    def initialize(x, y, height, shop_goods,money = 0)
+      super(x, y, window_width, height)
+      @shop_goods = shop_goods
+      @money = money
+      refresh
+      select(0)
+    end
+    def enable?(item)
+      if item && !$game_party.item_max?(item)
+        price(item).each do |key,value|
+          return false if !@money.include?(Monnaie::NAME.index(key)+1)
+          return false if value > $game_party.gold2[Monnaie::NAME.index(key)]
+        end
+      else
+        return false
+      end
+      return true
+    end
+    def draw_item(index)
+      item = @data[index]
+      rect = item_rect(index)
+      draw_item_name(item, rect.x, rect.y, enable?(item))
+      rect.width -= 4
+      if price(item).is_a?(Integer)
+        draw_text(rect, price(item), 2)
+      else
+        width_tot = 0
+        price(item).each do |key,value|
+            width_tot += text_size(value.to_s).width
+          if Monnaie::ICON[Monnaie::NAME.index(key)] != nil
+            width_tot += 24
+          else
+            width_tot += text_size(key).width
+          end
+        end
+        rect.width -= width_tot
+        price(item).each do |key,value|
+          id = Monnaie::ICON[Monnaie::NAME.index(key)]
+          rect.width += text_size(value.to_s).width
+          draw_text(rect, value.to_s, 2)
+          if id != nil
+            rect.width += 24
+            draw_icon(id, rect.x+rect.width-24, rect.y,enable?(item))
+          else
+            rect.width += text_size(key).width
+            draw_text(rect, key, 2)
+          end
+        end
+      end
+    end
+  end
+elsif Monnaie::TYPE_MENU_MAGASIN == 2
+  ################################
+  # Modification de la Scene_Shop#
+  ################################
+  class Scene_Shop < Scene_MenuBase
+    alias create_gold_window_monnaie create_gold_window
+    def create_gold_window
+      create_gold_window_monnaie
+      array = Monnaie::MONNAIE_MENU
+      if Monnaie::YANFLY_MENU
+        @gold_window.height = 24+24*array.length
+        @gold_window.y = 0
+      end
+      @gold_window.value_affichage = [array[0]]
+      @gold_window.create_contents
+      @gold_window.refresh
+      $monnaie_index = 0
+    end
+    def create_buy_window
+      wy = @dummy_window.y
+      wh = @dummy_window.height
+      @buy_window = Window_ShopBuy.new(0, wy, wh, @goods)
+      @buy_window.viewport = @viewport
+      @buy_window.help_window = @help_window
+      @buy_window.status_window = @status_window
+      @buy_window.hide
+      @buy_window.set_handler(:ok,     method(:on_buy_ok))
+      @buy_window.set_handler(:cancel, method(:on_buy_cancel))
+      if Monnaie::YANFLY_MENU
+        array = @monnaie
+        array = [@monnaie] if !@monnaie.is_a?(Array)
+        @status_window.height -= 24*(array.length-1)
+        @status_window.y += 24*(array.length-1)
+      end
+    end
+    alias do_buy_multi_monnaie do_buy
+    def do_buy(number)
+      if buying_price.is_a?(Integer)
+        do_buy_multi_monnaie(number)
+      else
+        buying_price.each do |key,value|
+          id = Monnaie::NAME.index(key)
+          $game_party.lose_gold((value*number),id)
+        end
+        $game_party.gain_item(@item, number)
+      end
+    end
+    alias do_sell_multi_monnaie do_sell
+    def do_sell(number)
+      if selling_price.is_a?(Integer)
+        do_sell_multi_monnaie(number)
+      else
+        selling_price.each do |key,value|
+          id = Monnaie::NAME.index(key)
+          $game_party.gain_gold((value*number),id)
+        end
+        $game_party.lose_item(@item, number)
+      end
+    end
+    alias max_buy_multi_monnaie max_buy
+    def max_buy
+      max = $game_party.max_item_number(@item) - $game_party.item_number(@item)
+      if buying_price.is_a?(Integer)
+        return max_buy_multi_monnaie
+      else
+        ok = [max]
+        buying_price.each do |key,value|
+          id = Monnaie::NAME.index(key)
+          next if id != $monnaie_index
+          ok.push($game_party.gold2[id] / value)
+        end
+        return ok.min
+      end
+    end
+    def selling_price
+      if @item.note =~ /<Money = (\S+)>/
+        array = $1.split(",")
+        result = {}
+        for i in 0..(array.length-1)/2
+          result[array[i*2+1]] = (array[i*2].to_i/2)
+        end
+        return result
+      else
+        return @item.price / 2
+      end
+    end
+    alias update_multy_monnaie update
+    def update
+      update_multy_monnaie
+      if Input.trigger?(:CTRL)
+        $monnaie_index += 1 
+        $monnaie_index %= Monnaie::MONNAIE_MENU.length
+        @gold_window.value_affichage = [Monnaie::MONNAIE_MENU[$monnaie_index]]
+        @gold_window.create_contents
+        @gold_window.refresh
+        @buy_window.refresh
+        @sell_window.refresh
+      end
+    end
+  end
+  ######################################
+  # Modification de la Window ShopSell #
+  ######################################
+  class Window_ShopSell < Window_ItemList
+    def enable?(item)
+      return false if item == nil
+      if item.note =~ /<Money = (\S+)>/
+        array = $1.split(",")
+        result = {}
+        for i in 0..(array.length-1)/2
+          result[array[i*2+1]] = array[i*2].to_i
+        end
+        return true if result.has_key?(Monnaie::NAME[$monnaie_index])
+        return false
+      else
+        return item && item.price > 0
+      end
+    end
+  end
+  ########################################
+  # Modification de la window ShopNumber #
+  ########################################
+  class Window_ShopNumber < Window_Selectable
+    alias draw_total_price_multi_monnaie draw_total_price
+    def draw_total_price ############
+      if @price.is_a?(Integer) 
+        draw_total_price_multi_monnaie
+      else
+        width = contents_width - 8
+        rect = Rect.new(4,price_y,width,line_height)
+        width_tot = 0
+        @price.each do |key,value|
+          next if $monnaie_index != Monnaie::NAME.index(key)
+          width_tot += text_size((value*@number).to_s).width
+          if Monnaie::ICON[Monnaie::NAME.index(key)] != nil
+            width_tot += 24
+          else
+            width_tot += text_size(key).width
+          end
+        end
+        rect.width -= width_tot
+        @price.each do |key,value|
+          next if $monnaie_index != Monnaie::NAME.index(key)
+          id = Monnaie::ICON[Monnaie::NAME.index(key)]
+          rect.width += text_size((value*@number).to_s).width
+          draw_text(rect, (value*@number).to_s, 2)
+          if id != nil
+            rect.width += 24
+            draw_icon(id, rect.x+rect.width-24, rect.y)
+          else
+            rect.width += text_size(key).width
+            draw_text(rect, key, 2)
+          end
+        end
+      end
+    end
+  end
+  #####################################
+  # Modification de la window shopBuy #
+  #####################################
+  class Window_ShopBuy < Window_Selectable
+    def initialize(x, y, height, shop_goods)
+      super(x, y, window_width, height)
+      @shop_goods = shop_goods
+      refresh
+      select(0)
+    end
+    def enable?(item)
+      if item && !$game_party.item_max?(item)
+        return false if !@price[item].has_key?(Monnaie::NAME[$monnaie_index])
+        price(item).each do |key,value|
+          next if $monnaie_index != Monnaie::NAME.index(key)
+          return false if value > $game_party.gold2[Monnaie::NAME.index(key)]
+        end
+      else
+        return false
+      end
+      return true
+    end
+    def draw_item(index)
+      item = @data[index]
+      rect = item_rect(index)
+      draw_item_name(item, rect.x, rect.y, enable?(item))
+      rect.width -= 4
+      if price(item).is_a?(Integer)
+        draw_text(rect, price(item), 2)
+      else
+        width_tot = 0
+        price(item).each do |key,value|
+          next if $monnaie_index != Monnaie::NAME.index(key)
+            width_tot += text_size(value.to_s).width
+          if Monnaie::ICON[Monnaie::NAME.index(key)] != nil
+            width_tot += 24
+          else
+            width_tot += text_size(key).width
+          end
+        end
+        rect.width -= width_tot
+        price(item).each do |key,value|
+          next if $monnaie_index != Monnaie::NAME.index(key)
+          id = Monnaie::ICON[Monnaie::NAME.index(key)]
+          rect.width += text_size(value.to_s).width
+          draw_text(rect, value.to_s, 2)
+          if id != nil
+            rect.width += 24
+            draw_icon(id, rect.x+rect.width-24, rect.y,enable?(item))
+          else
+            rect.width += text_size(key).width
+            draw_text(rect, key, 2)
+          end
         end
       end
     end
@@ -850,7 +1131,8 @@ class Game_Interpreter
       goods.push(@list[@index].parameters)
     end
     SceneManager.call(Scene_Shop)
-    SceneManager.scene.prepare(goods, @params[4],@magasin_monnaie)
+    SceneManager.scene.prepare(goods, @params[4],@magasin_monnaie) if Monnaie::TYPE_MENU_MAGASIN == 1
+    SceneManager.scene.prepare(goods, @params[4]) if Monnaie::TYPE_MENU_MAGASIN == 2
     @magasin_monnaie = nil
     Fiber.yield
   end
@@ -1078,6 +1360,148 @@ if Monnaie::SELCHAR_WEAPON_UPGRADE
             @price[item] = goods[2] == 0 ? item.price : goods[3]
           end
         end
+      end
+    end
+  end
+end
+################################
+# Modif pour le system de bank #
+################################
+if Monnaie::GALV_BANK_SYSTEM
+  class Window_Bank < Window_Selectable
+    alias initialize_multi_monnaie initialize
+    def initialize
+      @monnaie = 0
+      initialize_multi_monnaie
+    end
+    def gold_transfer
+      if Input.repeat?(:DOWN) && $game_party.gold2[@monnaie] > 0 || Input.repeat?(:UP) && $game_party.gold_stored[@monnaie] > 0
+          RPG::SE.new(Storage::SE_BANK[0], Storage::SE_BANK[1], Storage::SE_BANK[2]).play
+      end
+      if Input.press?(:DOWN)
+        before = $game_party.gold2[@monnaie]
+        $game_party.lose_gold(@deposit_rate,@monnaie)
+        after = $game_party.gold2[@monnaie]
+        puts $game_party.gold_stored.to_s
+        puts (before - after).to_s
+        $game_party.gold_stored[@monnaie] += (before - after)
+        @deposit_rate += 1
+        refresh
+      end
+      if Input.trigger?(:R) && !Input.press?(:DOWN) && !Input.press?(:UP)
+        return if $game_party.gold2[@monnaie] == 0
+        before = $game_party.gold2[@monnaie]
+        $game_party.lose_gold($game_party.gold2[@monnaie],@monnaie)
+        after = $game_party.gold2[@monnaie]
+        $game_party.gold_stored[@monnaie] += before - after
+        refresh
+        RPG::SE.new(Storage::SE_BANK[0], Storage::SE_BANK[1], Storage::SE_BANK[2]).play
+      end
+      if !Input.press?(:DOWN)
+        @deposit_rate = 1
+      end
+      if Input.press?(:UP)
+        @withdraw_rate = $game_party.gold_stored[@monnaie] if @withdraw_rate >= $game_party.gold_stored[@monnaie]
+        before = $game_party.gold_stored[@monnaie]
+        $game_party.gold_stored[@monnaie] -= @withdraw_rate
+        after = $game_party.gold_stored[@monnaie]
+        $game_party.gain_gold(before - after,@monnaie)
+        if $game_party.gold_stored[@monnaie] == 0
+          return refresh
+        end
+        @withdraw_rate += 1
+        refresh
+      end
+      
+      if Input.trigger?(:L) && !Input.press?(:DOWN) && !Input.press?(:UP)
+        take_all_gold = $game_party.gold_stored[@monnaie]
+        before = $game_party.gold_stored[@monnaie]
+        $game_party.gold_stored[@monnaie] -= take_all_gold
+        after = $game_party.gold_stored[@monnaie]
+        $game_party.gain_gold(before - after,@monnaie)
+        refresh
+        RPG::SE.new(Storage::SE_BANK[0], Storage::SE_BANK[1], Storage::SE_BANK[2]).play
+      end
+      if !Input.press?(:UP)
+        @withdraw_rate = 1
+      end
+      if Input.trigger?(:CTRL)
+        @monnaie += 1
+        @monnaie %= Monnaie::NAME.length
+        refresh
+      end
+    end
+    def refresh
+      contents.clear
+      draw_gold_location(Storage::GOLD_INVENTORY, 0, 0, 250)
+      draw_gold_location(Storage::GOLD_BANKED, 0, line_height * 1, 250)
+      draw_currency_value([value,Monnaie::NAME[@monnaie]],"", 4, 0, contents.width)
+      draw_currency_value([value_stored,Monnaie::NAME[@monnaie]],"", 4, line_height * 1, contents.width)
+    end
+    def draw_currency_value(value, unit, x, y, width)
+      if value.is_a?(Array)
+        x2 = 0
+        value2 = value.clone.reverse!
+        for i in value2
+          if i.is_a?(Integer)
+            w = text_size(i.to_s).width*1.2
+            w *= 1.2 if i.to_s.length == 1
+            draw_text(x+width-w-x2, y, w, contents.font.size, i.to_s, 2)
+            x2 += w
+          else
+            id = Monnaie::NAME.index(i)
+            if Monnaie::ICON[id] != nil
+              draw_icon(Monnaie::ICON[id], x+width-24-x2, y-(24-contents.font.size)/2)
+              x2 += 24
+            else
+              w = text_size(i).width*1.2
+              draw_text(x+width-w-x2, y, w, contents.font.size, i, 2)
+              x2 += w
+            end
+          end
+        end
+      else
+        cx = text_size(unit).width
+        change_color(normal_color,$game_party.gold >= value)
+        draw_text(x, y, width - cx - 2, contents.font.size, value, 2)
+        change_color(system_color)
+        draw_text(x, y, width, contents.font.size, unit, 2)
+      end
+    end
+    def value
+      $game_party.gold2[@monnaie]
+    end
+    def value_stored
+      $game_party.gold_stored[@monnaie]
+    end
+  end
+  class Game_Interpreter
+    def bank_add(amount,name)
+      id = Monnaie::NAME.index(name)
+      $game_party.gold_stored[id] += amount
+    end
+    def bank_rem(amount,name)
+      id = Monnaie::NAME.index(name)
+      $game_party.gold_stored[id] -= amount
+      $game_party.gold_stored[id] = 0 if $game_party.gold_stored[id] < 0
+    end
+    def bank_count(name)
+      id = Monnaie::NAME.index(name)
+      $game_party.gold_stored[id]
+    end
+  end
+  class Game_Party < Game_Unit
+    
+    alias init_all_items_multi_monnaie init_all_items
+    def init_all_items
+      init_all_items_multi_monnaie
+      init_gold_stored
+    end
+    
+    def init_gold_stored
+      @gold_stored = {}
+      for i in 0...Monnaie::NAME.length
+        @gold_stored[i] = 0
       end
     end
   end

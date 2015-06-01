@@ -1382,8 +1382,6 @@ if Monnaie::GALV_BANK_SYSTEM
         before = $game_party.gold2[@monnaie]
         $game_party.lose_gold(@deposit_rate,@monnaie)
         after = $game_party.gold2[@monnaie]
-        puts $game_party.gold_stored.to_s
-        puts (before - after).to_s
         $game_party.gold_stored[@monnaie] += (before - after)
         @deposit_rate += 1
         refresh

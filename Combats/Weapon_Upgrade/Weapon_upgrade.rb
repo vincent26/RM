@@ -11,6 +11,10 @@ son experience. Une fois un niveaux passer le personnage reçois une améliorati
 définitive d'une de ces caractéristique
 Un menu secondaire est ajouter au menu status a l'appuye de la touche shift
 Le niveau de competence pour une arme du héros est asocier a un nom descriptif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Il est actuellement adapter pour focntionner avec le script Yanfly - Ace status menu
+
 ####
 Utilisation :
 Configurer le module suivant pour mettre en place ce script

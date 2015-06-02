@@ -1,4 +1,4 @@
-# RM
+<h1> RM </h1>
 Script for RM VX ACE
 
 # Description

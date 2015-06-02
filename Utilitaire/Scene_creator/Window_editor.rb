@@ -5,6 +5,7 @@
 class Scene_Editor_W_Prog < Scene_Base
   def start
     super
+    @insertion = [false,0]
     create_background
     create_commande_window
     create_secondary_window
@@ -51,7 +52,7 @@ class Scene_Editor_W_Prog < Scene_Base
     @commande_window.set_handler(:C9,        method(:Com9))
     @commande_window.set_handler(:C10,       method(:Com10))
     @commande_window.set_handler(:C11,       method(:Com11))
-    @commande_window.set_handler(:C12,       method(:Com12))
+#~     @commande_window.set_handler(:C12,       method(:Com12))
     @commande_window.set_handler(:cancel,    method(:Comreturn))
     @commande_window.hide
     @commande_window.deactivate
@@ -91,6 +92,11 @@ class Scene_Editor_W_Prog < Scene_Base
     
   end
   def Inserer_commande
+    @window_command_modif.deactivate
+    @window_command_modif.hide
+    @commande_window.show
+    @commande_window.activate
+    @insertion = [true,@commande_list_window.index]
   end
   def Deplacer_commande
   end
@@ -132,6 +138,8 @@ class Scene_Editor_W_Prog < Scene_Base
   end
   def Com11 # Execution Script
   end
+#~   def Com12 # Execution Script
+#~   end
   
   def Comreturn
     @commande_window.hide
@@ -226,7 +234,9 @@ class Scene_Editor_W_Prog < Scene_Base
     end
     def ComText4
       array = [@type,@texte,@x,@y]
-      $game_editor.commande_new(array)
+      $game_editor.commande_new(array) unless @insertion[0]
+      $game_editor.commande_insert(array,@insertion[1]) if @insertion[0]
+      @insertion = [false,0]
       @window_command_command.close
       @commande_list_window.refresh
       @commande_list_window.activate
@@ -353,7 +363,9 @@ class Scene_Editor_W_Prog < Scene_Base
     end 
     def ComIcon4
       array = [@type,@id,@x,@y]
-      $game_editor.commande_new(array)
+      $game_editor.commande_new(array) unless @insertion[0]
+      $game_editor.commande_insert(array,@insertion[1]) if @insertion[0]
+      @insertion = [false,0]
       @window_command_command.close
       @commande_list_window.refresh
       @commande_list_window.activate
@@ -473,7 +485,9 @@ class Scene_Editor_W_Prog < Scene_Base
     end
     def ComFace5
       array = [@type,@name,@id,@x,@y]
-      $game_editor.commande_new(array)
+      $game_editor.commande_new(array) unless @insertion[0]
+      $game_editor.commande_insert(array,@insertion[1]) if @insertion[0]
+      @insertion = [false,0]
       @window_command_command.close
       @commande_list_window.refresh
       @commande_list_window.activate
@@ -657,7 +671,9 @@ class Scene_Editor_W_Prog < Scene_Base
     end
     def ComPict4
       array = [@type,@name,@x,@y]
-      $game_editor.commande_new(array)
+      $game_editor.commande_new(array) unless @insertion[0]
+      $game_editor.commande_insert(array,@insertion[1]) if @insertion[0]
+      @insertion = [false,0]
       @window_command_command.close
       @commande_list_window.refresh
       @commande_list_window.activate
@@ -815,7 +831,9 @@ class Scene_Editor_W_Prog < Scene_Base
   
     def variable_cancel
       array = [@type,@name,@op,@param]
-      $game_editor.commande_new(array) if @name != ""
+      $game_editor.commande_new(array) if !@insertion[0] && @name != ""
+      $game_editor.commande_insert(array,@insertion[1]) if @insertion[0] && @name != ""
+      @insertion = [false,0]
       @window_command_variable.close
       @window_command_variable_description.close
       @commande_list_window.refresh

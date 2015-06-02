@@ -346,6 +346,11 @@ class Game_Scene_Editor
     return true
   end
   
+  def commande_insert(fonc,index)
+    @scene_hash[@scene_actuel][:window][@window_actuel][:commande][@fonction_actuel][:commande_list].insert(index,fonc)
+    return true
+  end
+  
   def supprimer_commande(index)
     @scene_hash[@scene_actuel][:window][@window_actuel][:commande][@fonction_actuel][:commande_list].delete_at(index)
   end

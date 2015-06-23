@@ -3,55 +3,47 @@
         Multi_Currency
 #########
 Vincent26
-V. 1.5 (01/06/2015)
+V. 1.6 (23/06/2015)
 ####
 Description :
-Permet de creer plusieur type de monnaie dans RM. Cahque monnaie est alors indépendante
-Ajoute de plus un menu avec possibiliter de faire des conversion de monnaie.
+Permet de créer plusieurs types de monnaie dans RM. Chaque monnaie est alors indépendante.
+Ajoute de plus un menu avec possibilité de faire des conversions de monnaie.
 ####
 Utilisation :
 Configurer le module suivant :
-A la fin vous trouverez toute les info pour utiliser ce script
+A la fin vous trouverez toutes les infos pour utiliser ce script.
 ####
 =end
+
 module Monnaie
-  
+ 
   #Nombre de monnaie :
-  NBR_MONNAIE = 4
-  
+  NBR_MONNAIE = 3
+ 
   #Mettre un texte pour nom
-  NAME = ["Or","Argent","Cuivre","Âme"]
-  #Mettre l'id d'une icone si vous voulez voir l'icone plutot que le nom de la
-  #monnaie , mettre nil sinon
-  ICON = [190,184,187,nil]
+  NAME = ["Or","Argent","Cuivre"]
+  #Mettre l'id d'une icône si vous voulez voir l'icône plutot que le nom de la
+  #monnaie, mettre nil sinon.
+  ICON = [676,675,674]
   #Maximum transportable (mettre nil pour pas de limite)
-  MAX_VALUE = [nil,nil,nil,nil]
+  MAX_VALUE = [nil,nil,nil]
+ 
+  #Monnaie à afficher dans le menu
+  MONNAIE_MENU = [1,2,3]
   
-  #Monnaie a afficher dans le menu
-  MONNAIE_MENU = [1,2,3,4]
-  
-  #Type de conversion possible entre monnaie
-  CONVERSION = [["Or","Âme"],
-                ["Or","Argent"],
-                ["Or","Cuivre"],
+  #Type de conversion possible entre monnaies
+  CONVERSION = [["Or","Argent"],
                 ["Argent","Or"],
                 ["Argent","Cuivre"],
-                ["Cuivre","Or"],
-                ["Cuivre","Argent"],
-                ["Âme","Or"]
-                ]
-  #Taux de conversion des monnaie (a mettre dans le même ordre que le tableau juste au dessus)
-  TAUX_CONVERSION = [[100,1], # <= 100 or pour 1 Âme
-                     [1,10],  # <= 1 or pour 10 argent
-                     [1,100], # <= 1 or pour 100 cuivre
-                     [10,1],  # <= 10 argent pour 1 or
-                     [1,10],  # <= 1 argent pour 10 cuivre
-                     [100,1], # <= 100 cuivre pour 1 or
-                     [10,1],  # <= 10 cuivre pour 1 argent
-                     [1,100]  # <= 1 Âme pour 100 or
-                     ]
-  
-  ##################
+                ["Cuivre","Argent"]]
+                
+  #Taux de conversion des monnaies (à mettre dans le même ordre que le tableau juste au-dessus)
+  TAUX_CONVERSION = [[1,100],  # <= 1 or pour 100 argent
+                     [100,1],  # <= 100 argent pour 1 or
+                     [1,100],  # <= 1 argent pour 100 cuivre
+                     [100,1]]  # <= 100 cuivre pour 1 argent
+ 
+##################
   # CONFIGURATION POUR CONFLIT SCRIPT
                      
   #Utilisation du menu shop de YANFLY (Yanfly Engine Ace - Ace Shop Options v1.01)
@@ -59,26 +51,26 @@ module Monnaie
   
   #Utilisation du script de craft de  V.M of D.T (Advanced Recipe Crafting v1.0b)
   CRAFT_MENU = false
-  #Si vous utiliser ce script :
-  #Lors de la configuration de vos recette pour le prix vous pouvez configurez ainsi :
+  #Si vous utilisez ce script :
+  #Lors de la configuration de vos recettes pour le prix vous pouvez configurer ainsi :
   #:gold_cost => [10,"Or"], #par exemple
   #ou encore :
   #:gold_cost => [10,"Or",200,"Argent"],
-  #Lors du lancement d'un menu crafting si vous voulez pas utiliser toute les monnaie,
-  #ajouter cela comme appel de script avant de lancer le magasin :
+  #Lors du lancement d'un menu crafting si vous ne voulez pas utiliser toutes les monnaies,
+  #ajoutez cela comme appel de script avant de lancer le magasin :
   #$crafting_monnaie = "Or" #pour n'utiliser que l'or
-  #$crafting_monnaie = ["Or","Argent",...] #pour utiliser que les monnaie donnée
-  #$crafting_monnaie = :all #pour utiliser toute les monnaie
-  #ne pas définir $crafting_monnaie utiliser toute les monnaie
+  #$crafting_monnaie = ["Or","Argent",...] #pour utiliser que les monnaies données
+  #$crafting_monnaie = :all #pour utiliser toutes les monnaies
+  #ne pas définir $crafting_monnaie utiliser toutes les monnaies
   
   #Utilisation du script de Selchar et Tsukihime (Instance Equip Leveling Base 0 Ver. 1.05)
   SELCHAR_WEAPON_UPGRADE = false
   
   #Utilisation du script de bank de Galv (Galv's Item/Bank Storage)
   GALV_BANK_SYSTEM = true
-  #La modficication permet de stocker toute les monnaie
+  #La modification permet de stocker toutes les monnaies
   #NOUVELLE FONCTION :
-  #Dans le menu bank l'appuye de la touche CTRL change la monnaie a déposer
+  #Dans le menu bank l'appui de la touche CTRL change la monnaie à déposer
   #bank_add(amount,name)
   #bank_rem(amount,name)
   #bank_count(name)
@@ -88,79 +80,81 @@ module Monnaie
   #Type du magasin (1 ou 2)
   TYPE_MENU_MAGASIN = 2
 =begin
-  2 Type de magain sont a votre disposition. 
+  2 Types de magain sont à votre disposition. 
   
   MAGASIN 1 :  
-  Le magasin 1 est le magasin classique,chaque item peut voit son prix définit
-  en fonction de toute les monnaie a la fois:
-  ex 1 potion coute 10 d'Or et 20 de Cuivre
+  Le magasin 1 est le magasin classique, chaque item peut voir son prix défini
+  en fonction de toutes les monnaies à la fois :
+  ex : 1 potion coûte 10 d'Or et 20 de Cuivre.
   
-  Il faut un appel de script avant de lancer le magasin pour choisir les monnaie
+  Il faut un appel de script avant de lancer le magasin pour choisir les monnaies
   disponible dans celui-ci :
   Faire un appel de script : magasin(name)
-  name est le nom de la monnaie utilisable ou un tableau des monnaie utilisable
+  name est le nom de la monnaie utilisable ou un tableau des monnaies utilisables
   Faire ensuite un appel de magasin basique
-  ATTENTION : les objet du magasin doivent avoir été définit comme ci-après
-  Sinon une erreur va ce produire
+  ATTENTION : les objets du magasin doivent avoir été définis comme ci-après
+  sinon une erreur va se produire
   ex : magasin("Or")
   ou : magasin(["Or","Argent"])
   
   Pour définir les prix des objets il faut faire ainsi :
   Dans la note de l'item mettre :
   <Money = Prix,MON,PRIX,MON,...>
-  ex : <Money = 50,Or,20,Argent> pour 50 d'or et 20 d'argent
+  ex : <Money = 50,Or,20,Argent> pour 50 d'or et 20 d'argent.
   
-  Le menu magasin de Yanfly est compatible avec ce magasin
+  Le menu magasin de Yanfly est compatible avec ce magasin.
   
   MAGASIN 2 :
-  Le magasin 2 est le magasin améliorer pour ne pas déformer l'affichage en cas 
-  d'utilisation de beaucoup de monnaie et plus simple d'utilisation. Chaque 
-  objet objet voit son prix définit en fonction d'une seule monnaie a la fois:
-  ex 1 potion coute 10 d'Or OU 20 de Cuivre
+  Le magasin 2 est le magasin amélioré pour ne pas déformer l'affichage en cas 
+  d'utilisation de beaucoup de monnaies et plus simple d'utilisation. Chaque 
+  objet voit son prix défini en fonction d'une seule monnaie à la fois :
+  ex : 1 potion coûte 10 d'Or OU 20 de Cuivre.
   
-  Il ne faut pas d'appel de script avant de lancer ce magasin
+  Il ne faut pas d'appel de script avant de lancer ce magasin.
   
-  Pour définir les prix des objets il faut faire ainsi :
+  Pour définir les prix des objets, il faut faire ainsi :
   Dans la note de l'item mettre :
   <Money = Prix,MON,PRIX,MON,...>
-  ex : <Money = 50,Or,20,Argent> pour 50 d'or OU 20 d'argent
+  ex : <Money = 50,Or,20,Argent> pour 50 d'or OU 20 d'argent.
   
-  Le menu magasin de Yanfly n'est peut-être pas compatible avec ce magasin
+  Le menu magasin de Yanfly n'est peut-être pas compatible avec ce magasin.
 
 =end
-##############
+##############                     
 =begin
   Nouvelle fonction :
-  Dans un text au lieu de mettre \G on peut désormais mettre \G[id] pour 
-  remplacer par le nom de la id'eme monnaie
-  Pour ouvrir la fenêtre de avec la quantiter d'argent mettre au lieu de \$
-  on peut désormais mettre \$[id] pour la id'éme monnaie ou encore \$[id1,id2]
-  pour afficher 2 monnaie etc...
-  
-  En appel de script pour changer recuperer la valeur d'une monnaie :
-  
+  Dans un texte au lieu de mettre \G on peut désormais mettre \G[id] pour
+  remplacer par le nom de la id'ème monnaie
+  Pour ouvrir la fenêtre avec la quantité d'argent (avec \$)
+  on peut désormais mettre \$[id] pour la id'ème monnaie ou encore \$[id1,id2]
+  pour afficher 2 monnaies etc...
+ 
+  En appel de script, pour changer ou récupérer la valeur d'une monnaie :
+ 
   #Ajout de monnaie
-  gain_monnaie(name,value)
-  name => sont nom ex "Or"
-  value => la valeur du gain
-  
+   gain_monnaie(name,value)
+   name => sont nom ex "Or"
+   value => la valeur du gain (possibilité de mettre la valeur
+   d'une variable en écrivant $game_variables[n])
+ 
   #Perte de monnaie
-  perte_monnaie(name,value)
-  name => sont nom ex "Or"
-  value => la valeur de la perte
-  
-  #Recuperer la valeur d'une monnaie
-  monnaie(name)
-  name => sont nom ex "Or"
-  OU
-  name => tableau de nom ex: ["Or","Argent"]
-  
-  #Pour lancer un magasin avec une monnaie particulière (uniquement magasin 1):
+   perte_monnaie(name,value)
+   name => sont nom ex "Or"
+   value => la valeur de la perte (possibilité de mettre la valeur
+   d'une variable en écrivant $game_variables[n])
+ 
+  #Récupérer la valeur d'une monnaie
+   monnaie(name)
+   name => son nom ex "Or"
+   OU
+   name => tableau de nom ex: ["Or","Argent"]
+ 
+  #Pour lancer un magasin avec une monnaie particulière (uniquement magasin 1) :
    Faire un appel de script : magasin(name)
-   name est le nom de la monnaie utilisable ou un tableau des monnaie utilisable
+   name est le nom de la monnaie utilisable ou un tableau des monnaies utilisables
    Faire ensuite un appel de magasin basique
-   ATTENTION : les objet du magasin doivent avoir été définit comme ci-dessous
-   Sinon une erreur va ce produire
+   ATTENTION : les objets du magasin doivent avoir été définis comme ci-dessous
+   Sinon une erreur va se produire
    ex : magasin("Or")
    ou : magasin(["Or","Argent"])
    
@@ -751,6 +745,10 @@ elsif Monnaie::TYPE_MENU_MAGASIN == 2
     def create_gold_window
       create_gold_window_monnaie
       array = Monnaie::MONNAIE_MENU
+      if Monnaie::YANFLY_MENU
+        @gold_window.height = 24+24*array.length
+        @gold_window.y = 0
+      end
       @gold_window.value_affichage = [array[0]]
       @gold_window.create_contents
       @gold_window.refresh
@@ -1267,7 +1265,7 @@ if Monnaie::CRAFT_MENU
     def draw_gold_cost
       if @recipe.gold_cost != 0
         change_color(system_color, @recipe.has_gold?)
-        draw_text(0,contents.height-contents.font.size*2,contents.width,contents.font.size,"Crafting Cost:")
+        draw_text(0,contents.height-contents.font.size*2,contents.width,contents.font.size,"Coût de production :")
         change_color(normal_color, @recipe.has_gold?)
         draw_currency_value(@recipe.gold_cost,Vocab::currency_unit,0,contents.height-contents.font.size*2,contents.width)
       end  
@@ -1429,8 +1427,8 @@ if Monnaie::GALV_BANK_SYSTEM
       contents.clear
       draw_gold_location(Storage::GOLD_INVENTORY, 0, 0, 250)
       draw_gold_location(Storage::GOLD_BANKED, 0, line_height * 1, 250)
-      draw_currency_value([value,Monnaie::NAME[@monnaie]],"", 4, 0, contents.width)
-      draw_currency_value([value_stored,Monnaie::NAME[@monnaie]],"", 4, line_height * 1, contents.width)
+      draw_currency_value([value,Monnaie::NAME[@monnaie]],"", 0, 0, contents.width)
+      draw_currency_value([value_stored,Monnaie::NAME[@monnaie]],"", 0, line_height * 1, contents.width)
     end
     def draw_currency_value(value, unit, x, y, width)
       if value.is_a?(Array)
@@ -1439,16 +1437,16 @@ if Monnaie::GALV_BANK_SYSTEM
         for i in value2
           if i.is_a?(Integer)
             w = text_size(i.to_s).width*1.2
-            draw_text(x+width-w-x2, y, w, contents.font.size, i.to_s, 2)
+            draw_text(width-w-x2-x, y, w, contents.font.size, i.to_s, 2)
             x2 += w
           else
             id = Monnaie::NAME.index(i)
             if Monnaie::ICON[id] != nil
-              draw_icon(Monnaie::ICON[id], x+width-24-x2, y-(24-contents.font.size)/2)
+              draw_icon(Monnaie::ICON[id], width-24-x2-x, y-(24-contents.font.size)/2)
               x2 += 24
             else
               w = text_size(i).width*1.2
-              draw_text(x+width-w-x2, y, w, contents.font.size, i, 2)
+              draw_text(width-w-x2-x, y, w, contents.font.size, i, 2)
               x2 += w
             end
           end

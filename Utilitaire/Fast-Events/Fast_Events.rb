@@ -26,7 +26,7 @@ Ou NOM est le nom de l'event a copier
 ################################################################################
 Contact : zeludtnecniv@gmail.com
 
-          http://www.rpgmakervx-fr.com/t15645-vxacescript-d-etage
+          http://www.rpgmakervx-fr.com/t18482-fast_events_making#211353
    
 =end
 module FAST_EVENT

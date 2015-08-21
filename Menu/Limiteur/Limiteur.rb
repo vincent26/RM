@@ -124,7 +124,7 @@ end
 ################################################################################
 #        Scene_ItemBase ajout de la possibilité de jeter un objet              #
 ################################################################################  
-class Scene_ItemBase < Scene_MenuBase
+class Scene_Item
   alias activate_item_window_inventaire activate_item_window
   def activate_item_window
     @item_window.refresh

@@ -24,6 +24,13 @@ ex : $game_coffre.coffre_new("coffre commun",[2,3],[20,1],[0,1])
 ajoute 20*l'item 2
 et 1*l'arme 3
 =end
+module Coffre_Stockage
+  
+  Touche_Switch = :A
+  
+  Nom_Touche_Switch = "SHIFT"
+  
+end
 ################################################################################
 #                               Class mère                                     #
 ################################################################################
@@ -288,7 +295,7 @@ class Window_Switch < Window_Base
     self.contents.clear
     contents.font.size = 24
     change_color(text_color(30), true)
-    contents.draw_text(0, 0, 76, 24, "◄─► SHIFT",1)
+    contents.draw_text(0, 0, 76, 24, "◄─► "+Coffre_Stockage::Nom_Touche_Switch.to_s,1)
   end
 end
 ################################################################################
@@ -325,13 +332,11 @@ end
 #                               Window_Selectable                                 #
 ################################################################################
 class Window_Selectable < Window_Base
+  
+  alias process_handling_coffre_stockage process_handling
   def process_handling
-    return unless open? && active
-    return process_ok       if ok_enabled?        && Input.trigger?(:C)
-    return process_cancel   if cancel_enabled?    && Input.trigger?(:B)
-    return process_pagedown if handle?(:pagedown) && Input.trigger?(:R)
-    return process_pageup   if handle?(:pageup)   && Input.trigger?(:L)
-    return process_switch   if handle?(:switch)   && Input.trigger?(:A)
+    process_handling_coffre_stockage
+    return process_switch   if handle?(:switch)   && Input.trigger?(Coffre_Stockage::Touche_Switch)
   end
 
   def process_switch

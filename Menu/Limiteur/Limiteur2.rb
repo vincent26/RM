@@ -1,21 +1,31 @@
+module LIMITEUR
 #Pour savoir le nombre d'item total du héros :
 #$game_party.max_item_number_total
-NBR_MX_SLOT = 20
+NBR_MX_SLOT = 200
 TEXTE_INVENTAIRE_PLEIN = "Inventaire plein"
 #Pour définir le nombre d'objet stackable d'un item ajouter ceux-ci dans la note
 #de l'item (Base 99):
 #<Stack = X>
+end
 ################################################################################
 #                               Limiteur nbr d'objet                           #
 ################################################################################
 class Game_Party < Game_Unit
   
+  attr_accessor :max_slot
+  
+  alias initialize_limiteur_inv initialize
+  def initialize
+    initialize_limiteur_inv
+    @max_slot = LIMITEUR::NBR_MX_SLOT
+  end
+  
   alias max_item_number_2 max_item_number
   def max_item_number(item)
     if item.class == RPG::Item
-      return 99999999999999 if item.key_item?
+      return test_stack(item) if item.key_item?
     end
-    a = test_stack(item)* (NBR_MX_SLOT - nbr_stack)
+    a = test_stack(item)* (@max_slot - nbr_stack)
     a += nbr_stack_libre(item)
     return a
   end
@@ -87,7 +97,7 @@ class Game_Party < Game_Unit
     if include_equip && new_number < 0
       discard_members_equip(item, -new_number)
     end
-    $game_message.add(TEXTE_INVENTAIRE_PLEIN) if (nbr_stack == NBR_MX_SLOT)&&(!$game_message.has_text?)&&(max_item_number(item) == a)
+    $game_message.add(TEXTE_INVENTAIRE_PLEIN) if (nbr_stack == @max_slot)&&(!$game_message.has_text?)&&(max_item_number(item) == a)
     $game_map.need_refresh = true
   end
 end
@@ -145,13 +155,6 @@ class Scene_Item < Scene_ItemBase
   def on_item_number_cancel
     @number_window.close
     @command_item_window.activate
-  end
-end
-
-class Window_ItemList < Window_Selectable
-  alias enable_inventaire? enable?
-  def enable?(item)
-    return true
   end
 end
 ################################################################################
@@ -217,6 +220,11 @@ end
 ################################################################################
 class Window_ItemList < Window_Selectable
   
+  alias enable_inventaire? enable?
+  def enable?(item)
+    return true
+  end
+  
   def make_item_list
     @data = []
     for item in $game_party.all_items
@@ -234,11 +242,23 @@ class Window_ItemList < Window_Selectable
       rect = item_rect(index)
       rect.width -= 4
       draw_item_name(item, rect.x, rect.y, enable?(item))
-      draw_item_number(rect, item, index)
+      draw_item_number(rect, item)
     end
   end
   
-  def draw_item_number(rect, item, index)
+  alias draw_item_number_limiteur draw_item_number
+  def draw_item_number(rect, item)
+    index = nil
+    for i in 0...@data.length
+      next if @data[i] != item
+      rec = item_rect(i)
+      rec.width -= 4
+      if  rec == rect
+        index = i 
+        break
+      end
+    end
+    return draw_item_number_limiteur(rect, item) if index == nil
     nbr = 0
     inde = @data.index(item)
     id = (index - inde) + 2

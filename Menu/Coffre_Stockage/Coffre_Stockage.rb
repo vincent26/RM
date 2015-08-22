@@ -12,7 +12,7 @@
 -Créer/ouvrir un coffre :
 $game_coffre.open_menu("nom_coffre")
 avec le nom du coffre que vous voulez en laissant les ""
-si 2 coffre appel le même nom il contiendrons la même chose
+si 2 coffre porte le même nom il contiendrons la même chose
 
 -Pour ajouter des objet au coffre :
 $game_coffre.coffre_new("nom_coffre",id_objet,quantité,type)

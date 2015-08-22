@@ -1,30 +1,25 @@
-=begin
-################################################################################
-Limiteur d'inventaire
-#####
-Crédit : Vincent26
-#####
-Description :
-Ce script permet de limiter le nombre total d'objet que peut posseder un personnage
-Lorsque celui-ci récupere un objet avec un inventaire plein un message s'affiche 
-pour l'informer
-Ce script ajoute la possibiliter de jeter un objet depuis l'inventaire
-Les objet cle ne sont pas comptabiliser dans le nombre maximum d'objet
-#####
-Utilisation :
-Pour savoir le nombre d'item total du héros :
-$game_party.max_item_number_total
-=end
-NBR_MX_ITEM = 150
+module LIMITEUR
+#Pour savoir le nombre d'item total du héros :
+#$game_party.max_item_number_total
+NBR_MX_ITEM = 600
 TEXTE_INVENTAIRE_PLEIN = "Inventaire plein"
+end
 ################################################################################
 #                               Limiteur nbr d'objet                           #
 ################################################################################
 class Game_Party < Game_Unit
   
+  attr_accessor :nbr_max_item
+  
+  alias initialize_limiteur_inv initialize
+  def initialize
+    initialize_limiteur_inv
+    @nbr_max_item = LIMITEUR::NBR_MX_ITEM
+  end
+  
   alias max_item_number_2 max_item_number
   def max_item_number(item)
-    return (NBR_MX_ITEM - max_item_number_total)
+    return (@nbr_max_item - max_item_number_total)
   end
   
   def max_item_number_total
@@ -54,8 +49,8 @@ class Game_Party < Game_Unit
     if include_equip && new_number < 0
       discard_members_equip(item, -new_number)
     end
-    $game_message.add(TEXTE_INVENTAIRE_PLEIN) if (max_item_number_total == NBR_MX_ITEM)&&(!$game_message.has_text?)&&!test
-   $game_map.need_refresh = true
+    $game_message.add(TEXTE_INVENTAIRE_PLEIN) if (max_item_number_total == @nbr_max_item)&&(!$game_message.has_text?)&&!test 
+    $game_map.need_refresh = true
   end
 end
 ################################################################################
@@ -134,7 +129,7 @@ class Scene_Item
 end
 ################################################################################
 #                     Window_Number_Inventaire selecteur nbr a jeter           #
-################################################################################
+################################################################################ 
 class Window_Number_Inventaire < Window_Selectable
   def initialize(item,x,y)
     super(x+20, y-12,48,48)

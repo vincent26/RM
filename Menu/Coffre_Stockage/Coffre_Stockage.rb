@@ -1,21 +1,10 @@
 =begin
-################################################################################
-Coffre de stockage
-#####
-Crédit : Vincent26
-#####
-Description :
-Ce script permet de creer des coffre de stockage d'items, il sera surtout 
-intéressant pour les projet possédant un limiteur d'inventaire
-#####
-Utilisation :
-
-Créer/ouvrir un coffre :
+créer/ouvrir un coffre :
 $game_coffre.open_menu("nom_coffre")
-Avec le nom du coffre que vous voulez en laissant les ""
-si 2 coffre porte le même nom il contiendrons la même chose
+avec le nom du coffre que vous voulez en laissant les ""
+si 2 coffre appel le même nom il contiendrons la même chose
 
-Pour ajouter des objet au coffre :
+pour ajouter des objet au coffre :
 $game_coffre.coffre_new("nom_coffre",id_objet,quantité,type)
 
 id_objet et un tableau qui contient l'id de chacun des objet que vous voulez ajouter (comme cela : [id1,id2,...])
@@ -97,7 +86,7 @@ end
 ################################################################################
 class Scene_Coffre < Scene_MenuBase
  
- def start
+  def start
     super
     $coffre = true
     create_help_window
@@ -348,19 +337,23 @@ end
 class Window_ItemList < Window_Selectable
   alias draw_item_coffre_stockage draw_item
   def draw_item(index)
-    item = @data[index]
-    if item
-      rect = item_rect(index)
-      rect.width -= 4
-      draw_item_name(item, rect.x, rect.y, enable?(item),rect.width-60)
-      draw_item_number(rect, item)
+    if $coffre != true
+      draw_item_coffre_stockage(index)
+    else
+      item = @data[index]
+      if item
+        rect = item_rect(index)
+        rect.width -= 4
+        draw_item_name(item, rect.x, rect.y, enable?(item),rect.width-60)
+        draw_item_number(rect, item)
+      end
     end
   end
 
   alias enable_coffre? enable?
   def enable?(item)
     if $coffre != true
-      $game_party.usable?(item)
+      enable_coffre?(item)
     else
       true
     end
@@ -489,8 +482,8 @@ module DataManager
   class << self
     alias :create_game_objects_coffre_stockage :create_game_objects
     def create_game_objects
-      create_game_objects_coffre_stockage
-     $game_coffre      = Game_Coffre_Stockage.new
+      create_game_objects_coffre_stockage 
+      $game_coffre      = Game_Coffre_Stockage.new
     end
     alias :make_save_contents_coffre_stockage :make_save_contents
     def make_save_contents

@@ -1,10 +1,20 @@
 =begin
-créer/ouvrir un coffre :
+################################################################################
+-Coffre de stockage
+-#####
+-Crédit : Vincent26
+-#####
+-Description :
+-Ce script permet de creer des coffre de stockage d'items, il sera surtout 
+-intéressant pour les projet possédant un limiteur d'inventaire
+-#####
+-Utilisation :
+-Créer/ouvrir un coffre :
 $game_coffre.open_menu("nom_coffre")
 avec le nom du coffre que vous voulez en laissant les ""
 si 2 coffre appel le même nom il contiendrons la même chose
 
-pour ajouter des objet au coffre :
+-Pour ajouter des objet au coffre :
 $game_coffre.coffre_new("nom_coffre",id_objet,quantité,type)
 
 id_objet et un tableau qui contient l'id de chacun des objet que vous voulez ajouter (comme cela : [id1,id2,...])

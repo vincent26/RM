@@ -1,6 +1,23 @@
+=begin
+################################################################################
+Limiteur d'inventaire
+#####
+Crédit : Vincent26
+#####
+Description :
+Ce script permet de limiter le nombre total d'objet que peut posseder un personnage
+Lorsque celui-ci récupere un objet avec un inventaire plein un message s'affiche 
+pour l'informer
+Ce script ajoute la possibiliter de jeter un objet depuis l'inventaire
+Les objet cle ne sont pas comptabiliser dans le nombre maximum d'objet
+#####
+Utilisation :
+Pour savoir le nombre de slot total du héros :
+$game_party.max_slot
+Pour définir en jeu le nombre total de slot du heros :
+$game_party.max_slot = X
+=end
 module LIMITEUR
-#Pour savoir le nombre d'item total du héros :
-#$game_party.max_item_number_total
 NBR_MX_SLOT = 200
 TEXTE_INVENTAIRE_PLEIN = "Inventaire plein"
 #Pour définir le nombre d'objet stackable d'un item ajouter ceux-ci dans la note
@@ -59,7 +76,7 @@ class Game_Party < Game_Unit
   def nbr_stack_item(item)
     a = 0
     if item.class == RPG::Item
-      a = 999999 if item.key_item? == true
+      return 1 if item.key_item? == true
     end
     a += 1
     a += (item_number(item)-1)/test_stack(item)
@@ -97,7 +114,7 @@ class Game_Party < Game_Unit
     if include_equip && new_number < 0
       discard_members_equip(item, -new_number)
     end
-    $game_message.add(TEXTE_INVENTAIRE_PLEIN) if (nbr_stack == @max_slot)&&(!$game_message.has_text?)&&(max_item_number(item) == a)
+    $game_message.add(LIMITEUR::TEXTE_INVENTAIRE_PLEIN) if (nbr_stack == @max_slot)&&(!$game_message.has_text?)&&(max_item_number(item) == a)
     $game_map.need_refresh = true
   end
 end
@@ -112,7 +129,6 @@ class Scene_Item < Scene_ItemBase
     c = [@item_window.item_rect(b).x,@item_window.item_rect(b).y]
     c[1] = @item_window.item_rect(b-2).ye if (@item_window.index - @item_window.top_row*2) >= 18
     c[1] = @item_window.item_rect(b-4).y if (@item_window.index - @item_window.top_row*2) >= 20
-    puts @category_window.index
     @command_item_window = Window_Command_Item.new(c[0]+@item_window.x+24,c[1]+@item_window.y+12,@item_window.enable_inventaire?(a),@category_window.index)
     @command_item_window.viewport = @viewport
     @command_item_window.set_handler(:utiliser,     method(:on_item_utiliser))
@@ -202,7 +218,6 @@ class Window_Command_Item < Window_Command
     @utilisable = utilisable
     @jetable = false if (jetable == 3)
     @jetable = true if (jetable != 3)
-    puts @jetable
     super(x, y)
   end
 
@@ -263,7 +278,6 @@ class Window_ItemList < Window_Selectable
     inde = @data.index(item)
     id = (index - inde) + 2
     stack = $game_party.nbr_stack_item(item)
-    puts stack-id
     nbr = $game_party.test_stack(item) if stack-id >= 0
     nbr = (($game_party.item_number(item)-1) % $game_party.test_stack(item)) + 1 if stack-id < 0
     draw_text(rect, sprintf(":%2d", nbr), 2)

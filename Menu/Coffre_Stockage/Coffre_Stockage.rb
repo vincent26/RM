@@ -1,20 +1,10 @@
 =begin
-################################################################################
--Coffre de stockage
--#####
--Crédit : Vincent26
--#####
--Description :
--Ce script permet de creer des coffre de stockage d'items, il sera surtout 
--intéressant pour les projet possédant un limiteur d'inventaire
--#####
--Utilisation :
--Créer/ouvrir un coffre :
+créer/ouvrir un coffre :
 $game_coffre.open_menu("nom_coffre")
 avec le nom du coffre que vous voulez en laissant les ""
-si 2 coffre porte le même nom il contiendrons la même chose
+si 2 coffre appel le même nom il contiendrons la même chose
 
--Pour ajouter des objet au coffre :
+pour ajouter des objet au coffre :
 $game_coffre.coffre_new("nom_coffre",id_objet,quantité,type)
 
 id_objet et un tableau qui contient l'id de chacun des objet que vous voulez ajouter (comme cela : [id1,id2,...])
@@ -336,6 +326,11 @@ class Window_Selectable < Window_Base
   alias process_handling_coffre_stockage process_handling
   def process_handling
     process_handling_coffre_stockage
+    return unless open? && active
+    return process_ok       if ok_enabled?        && Input.trigger?(:C)
+    return process_cancel   if cancel_enabled?    && Input.trigger?(:B)
+    return process_pagedown if handle?(:pagedown) && Input.trigger?(:R)
+    return process_pageup   if handle?(:pageup)   && Input.trigger?(:L)
     return process_switch   if handle?(:switch)   && Input.trigger?(Coffre_Stockage::Touche_Switch)
   end
 

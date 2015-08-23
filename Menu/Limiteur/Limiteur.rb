@@ -1,6 +1,25 @@
+=begin
+################################################################################
+Limiteur d'inventaire
+#####
+Crédit : Vincent26
+#####
+Description :
+Ce script permet de limiter le nombre total d'objet que peut posseder un personnage
+Lorsque celui-ci récupere un objet avec un inventaire plein un message s'affiche 
+pour l'informer
+Ce script ajoute la possibiliter de jeter un objet depuis l'inventaire
+Les objet cle ne sont pas comptabiliser dans le nombre maximum d'objet
+#####
+Utilisation :
+Pour savoir le nombre d'item total transportable par le héros :
+$game_party.nbr_max_item
+Pour définir en jeu le nombre total de d'item du heros :
+$game_party.nbr_max_item = X
+Pour savoir le nombre d'item total posséder par le heros :
+$game_party.max_item_number_total
+=end
 module LIMITEUR
-#Pour savoir le nombre d'item total du héros :
-#$game_party.max_item_number_total
 NBR_MX_ITEM = 600
 TEXTE_INVENTAIRE_PLEIN = "Inventaire plein"
 end
@@ -49,7 +68,7 @@ class Game_Party < Game_Unit
     if include_equip && new_number < 0
       discard_members_equip(item, -new_number)
     end
-    $game_message.add(TEXTE_INVENTAIRE_PLEIN) if (max_item_number_total == @nbr_max_item)&&(!$game_message.has_text?)&&!test 
+    $game_message.add(LIMITEUR::TEXTE_INVENTAIRE_PLEIN) if (max_item_number_total == @nbr_max_item)&&(!$game_message.has_text?)&&!test 
     $game_map.need_refresh = true
   end
 end

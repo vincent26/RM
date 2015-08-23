@@ -16,6 +16,8 @@ Pour savoir le nombre de slot total du héros :
 $game_party.max_slot
 Pour définir en jeu le nombre total de slot du heros :
 $game_party.max_slot = X
+Pour savoir le nombre de slot occuper :
+$game_party.nbr_stack
 =end
 module LIMITEUR
 NBR_MX_SLOT = 200
@@ -88,18 +90,6 @@ class Game_Party < Game_Unit
     b = test_stack(item) if b == 0
     b = test_stack(item) - b
     return b
-  end
-  
-  def max_item_number_total
-    total = 0
-    for i in 0..(all_items.length-1)
-      test = true
-      test = !all_items[i].key_item? if all_items[i].class == RPG::Item
-      a = item_number(all_items[i]) if test
-      a = 0 if !test
-      total = total + a
-    end
-    return total
   end
   
   alias gain_item_2 gain_item

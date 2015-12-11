@@ -44,7 +44,7 @@ class Game_Event
         name =  event.pages[0].list[0].parameters[0][5..-1]
         $map_event_rapide.events.each do |id , ev|
           if ev.name == name
-            @event = ev
+            @event = ev.clone
             @event.x = event.x
             @event.y = event.y
             @event.id = event.id
